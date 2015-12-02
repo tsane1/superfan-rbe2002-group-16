@@ -12,10 +12,7 @@
  */
 
 #include "Firefight.h"
-#include "Mapping.h"
-
-boolean found, extinguished;
-Fan f(/*TODO: Choose pins*/);
+#include "Drive.h"
 
 void setup() {
   
