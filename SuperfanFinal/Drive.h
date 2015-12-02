@@ -1,4 +1,4 @@
-/* FILENAME: Mapping.h
+/* FILENAME: Drive.h
  * 
  * BRIEF: 
  * 
@@ -10,3 +10,15 @@
  * 
  * START DATE: Dec. 12, 2015
  */
+
+#ifndef DRIVE_H
+#define DRIVE_H
+
+#include "Arduino.h"
+#include <Wire.h>
+
+#define PULSE_TRIGGER 11
+
+
+  
+#endif
