@@ -19,6 +19,16 @@
 
 #define PULSE_TRIGGER 11
 
+enum sensorPins{
+  FRONT_PIN, LEFT_PIN, RIGHT_PIN, BACK_PIN
+};
 
+class SensorArray{
+  public:
+    int readings[4]; // sensor values
+    SensorArray(); // default constructor
+    void update(); // read new values, store to array
+    void start(); // starts reading cycle
+};
   
 #endif
