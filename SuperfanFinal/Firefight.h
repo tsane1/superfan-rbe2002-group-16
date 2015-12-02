@@ -20,7 +20,7 @@ class Fan{
   public:
     Fan(int stepPin1, int stepPin2, int stepPin3, int stepPin4, int fanPin, int flameSensorPin);
     boolean sweep(); // Function to scan for fire using stepper
-    boolean extinguish(); // Function to turn on fan and blow out fire
+    void extinguish(); // Function to turn on fan and blow out fire
   private:
     int _stepPin1, _stepPin2, _stepPin3, _stepPin4, _fanPin, _flameSensorPin;
 };

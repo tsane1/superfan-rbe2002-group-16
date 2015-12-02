@@ -42,8 +42,7 @@ class DriveController{
   public:
     DriveController(); // default constructor
     driveState drive(); // drive until a stopping condition is met
-    void turn(turnState dir); // turns robot
-    void sweep();
+    void turn(turnState dir); // turns robot 90 or 180 degrees in specified direction
     
   private:
     Servo leftMotor, rightMotor;
