@@ -8,7 +8,7 @@
  * @author Annie Hernandez
  * @author Patrick Murphy
  * 
- * START DATE: Dec. 12, 2015
+ * START DATE: Dec. 1, 2015
  */
 
 #include <Servo.h>
