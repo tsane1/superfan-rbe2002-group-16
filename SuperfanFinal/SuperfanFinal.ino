@@ -21,7 +21,10 @@ Fan fan(/*TODO: Choose pins*/);
 SensorArray ultrasonics();
 
 void setup() {
-  
+  pinMode(PULSE_TRIGGER, OUTPUT);
+  digitalWrite(PULSE_TRIGGER, HIGH);
+  delay(20);
+  digitalWrite(PULSE_TRIGGER, LOW);
 }
 
 void loop() {
