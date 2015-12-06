@@ -19,11 +19,6 @@
 #include <Wire.h>
 
 #define PULSE_TRIGGER 11
-#define FRONT_PIN 0
-#define LEFT_PIN 1
-#define RIGHT_PIN 2
-#define BACK_PIN 3
-
 
 enum sensorPins{
   FRONT_PIN, LEFT_PIN, RIGHT_PIN, BACK_PIN
@@ -38,18 +33,24 @@ enum turnState{
 class SensorArray{
   public:
     int readings[4]; // sensor values
+    
     SensorArray(); // default constructor
+    void setPins(int frontPin, int leftPin, int rightPin, int backPin); // init pins
     void update(); // read new values, store to array
+
+  private:
+    int frontPin, leftPin, rightPin, backPin;
 };
 
 class DriveController{
   public:
-    DriveController(); // default constructor
+    DriveController(int leftServoPin, int rightServoPin); // default constructor
     driveState drive(); // drive until a stopping condition is met
     void turn(turnState dir); // turns robot 90 or 180 degrees in specified direction
     
   private:
     Servo leftMotor, rightMotor;
+    SensorArray ultrasonics;
 };
   
 #endif
