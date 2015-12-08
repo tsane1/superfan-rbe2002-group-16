@@ -21,8 +21,14 @@ class Fan{
     Fan(int stepPin1, int stepPin2, int stepPin3, int stepPin4, int fanPin, int flameSensorPin);
     boolean sweep(); // Function to scan for fire using stepper
     void extinguish(); // Function to turn on fan and blow out fire
+    float getZ(byte dX);//function to calculate height of flame
   private:
     int stepPin1, stepPin2, stepPin3, stepPin4, fanPin, flameSensorPin;
+    /*steps taken from starting position such that
+      a positive number of steps points the flame sensor downwards
+      REASON: it simplifies math later on
+   */
+    int numSteps;
 };
 
 #endif
