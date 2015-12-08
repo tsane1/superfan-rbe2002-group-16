@@ -21,7 +21,7 @@
 #define PULSE_TRIGGER 11
 
 enum sensorPins{
-  FRONT_PIN, LEFT_PIN, RIGHT_PIN, BACK_PIN
+  FRONT_PIN = 0, LEFT_PIN, RIGHT_PIN, BACK_PIN
 };
 enum driveState{
   KEEP_GOING, FOUND_OPENING, OBSTACLE
@@ -32,14 +32,14 @@ enum turnState{
 
 class SensorArray{
   public:
-    int readings[4]; // sensor values
+    byte readings[4]; // sensor values
     
     SensorArray(); // default constructor
-    void setPins(int frontPin, int leftPin, int rightPin, int backPin); // init pins
+    void setPins(byte frontPin, byte leftPin, byte rightPin, byte backPin); // init pins
     void update(); // read new values, store to array
 
   private:
-    int frontPin, leftPin, rightPin, backPin;
+    byte frontPin, leftPin, rightPin, backPin;
 };
 
 class DriveController{
