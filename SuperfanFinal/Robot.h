@@ -30,23 +30,41 @@ class Tilter{
   void step(bool dir);//true = downwards
   int numSteps;
 };
+
+class Gyro{
+  public:
+    Gyro(); // default constructor
+    void init(); // initialize gyro
+    float getReading(); // get and calculate reading
+    
+  private:
+    L3G gyro;
+    float gyro_z; //gyro x val
+    float gyro_zold; //gyro cummulative z value
+    float gerrz; // Gyro 7 error
+    float G_gain=.00875; // gyros gain factor for 250deg/sec
+    float G_Dt=0.005;    // Integration time (DCM algorithm)  We will run the integration loop at 50Hz if possible
+};
+
 class Robot{
   public:
     byte wallDistances[4];
     
     Robot();//implemented
     void drive();
-    void turn(int deg);
-    void turn(direction dir);
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
     
   private:
     driveState updateUs();//implemented
+    void turn(int deg);
+    void turn(direction dir);
     Tilter tilt;
     Servo left, right;
+    Gyro gyro;
 };
+
 
 //pin defines
 #define leftServoPin 4 //servos

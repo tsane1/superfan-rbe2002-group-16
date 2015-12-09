@@ -48,6 +48,7 @@ float Robot::getZ(byte dX){
 Robot::Robot(){
   left.attach(leftServoPin, 1000, 2000);
   right.attach(rightServoPin, 1000, 2000);
+  this->gyro.init();
 }
 driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
@@ -84,10 +85,42 @@ void Robot::drive(){
   
   switch(this->updateUs()){
     case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(LEFT);
-    case TURN_RIGHT: this->turn(RIGHT);     
+    case TURN_LEFT: this->turn(LEFT); break;
+    case TURN_RIGHT: this->turn(RIGHT); break;
  }
 }
 
+void Robot::turn(direction dir){
+  switch(dir){
+    case FORWARD: break;
+    case LEFT: this->turn(90); break;
+    case RIGHT: this->turn(-90); break;
+    case BACKWARD: this->turn(180); break;
+  }
+}
 
+void Robot::turn(int deg){
+  
+}
+
+Gyro::Gyro(){
+  this->init();
+}
+
+void Gyro::init(){
+  if (!this->gyro.init()) // gyro init
+  {
+    Serial.println("Failed to autodetect gyro type!");
+    while (1); 
+  }
+  this->gyro.enableDefault();
+}
+
+float Gyro::getReading(){
+  this->gyro.read();
+  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * this->G_Dt;
+  this->gyro_z += this->gyro_zold;
+  this->gyro_zold = this->gyro_z;
+  return gyro_z;
+}
 
