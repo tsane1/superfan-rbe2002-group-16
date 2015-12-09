@@ -63,12 +63,12 @@ driveState Robot::updateUs(){
   wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
   wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
 
-  if(wallDistances[frontPin] < 50 /*TODO: Calibrate and convert value in inches here*/){
+  if(wallDistances[frontPin] < 6){
     if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_LEFT;
     else return TURN_RIGHT;
   }
-  boolean openingLeft = wallDistances[leftPin] - prevLeft > 0;
-  boolean openingRight = wallDistances[rightPin] - prevRight > 0;
+  boolean openingLeft = wallDistances[leftPin] - prevLeft > 1;
+  boolean openingRight = wallDistances[rightPin] - prevRight > 1;
   if(openingLeft && openingRight){
     if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_RIGHT;
     else return TURN_LEFT;
