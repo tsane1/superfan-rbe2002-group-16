@@ -85,10 +85,9 @@ void Robot::drive(){
   switch(this->updateUs()){
     case KEEP_GOING: break;
     case TURN_LEFT: this->turn(LEFT);
-    case TURN_RIGHT: this->turn(RIGHT);
-    case OBSTACLE:
-      this->left.write(90); this->right.write(90);
-      
+    case TURN_RIGHT: this->turn(RIGHT);     
  }
 }
+
+
 
