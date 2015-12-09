@@ -1,4 +1,4 @@
-/* FILENAME: Firefight.cpp
+/* FILENAME: Robot.cpp
  * 
  * BRIEF: 
  * 
@@ -8,10 +8,8 @@
  * @author Annie Hernandez
  * @author Patrick Murphy
  * 
- * START DATE: Dec. 5, 2015
+ * START DATE: Dec. 8, 2015
  */
-
-#include "Firefight.h"
 /*this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount 
  * in the x direction
@@ -34,7 +32,7 @@
 * for derivation of this formula see attached file
 * @param dX the displacement from ultrasonic sensor to candle base
 */
-float Fan::getZ(byte dX){
+float Robot::getZ(byte dX){
   float theta = initAngle + stepsToDeg(numSteps);
   float snsX = offsetX + dX + //distance between pivot and flame
   //plus the distance between flame sensor and pivot in x direction
@@ -44,5 +42,21 @@ float Fan::getZ(byte dX){
   ((snsX)/sin(degToRad(theta)));//from law of sines
   return offsetY + yFromPivotToFlame;
   //total is offset from ground to pivot + y from pivot to flame
+}
+
+Robot::Robot(){
+  left.attach(lServoPin, 1000, 2000);
+  right.attach(rServoPin, 1000, 2000);
+}
+Robot::updateUs(){
+  /*Sensors return vcc/512 V per inch with max of 254 inches
+  Since analogRead is from 0 to 1023 or vcc/1024 split
+  to get inches divide by 2. 
+  Since this will always be 254 or less it fits in a byte
+  */
+  wallDistances[fUsPin] = (byte)(analogRead(fUsPin)/2);
+  wallDistances[lUsPin] = (byte)(analogRead(lUsPin)/2);
+  wallDistances[rUsPin] = (byte)(analogRead(rUsPin)/2);
+  wallDistances[bUSPin] = (byte)(analogRead(bUsPin)/2);
 }
 
