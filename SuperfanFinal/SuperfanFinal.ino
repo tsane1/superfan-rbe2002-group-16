@@ -13,11 +13,13 @@
 
 #include <Servo.h>
 #include <Wire.h>
-#include <L3G.h>
+#include "L3G.h"
 #include "Robot.h"
 
-Robot rbt();
 #define PULSE_TRIGGER 11
+
+Robot superfan();
+
 void setup() {
   pinMode(PULSE_TRIGGER, OUTPUT);
   digitalWrite(PULSE_TRIGGER, HIGH);

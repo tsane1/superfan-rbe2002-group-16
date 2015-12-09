@@ -49,15 +49,30 @@ Robot::Robot(){
   left.attach(leftServoPin, 1000, 2000);
   right.attach(rightServoPin, 1000, 2000);
 }
-void Robot::updateUs(){
+driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
   Since analogRead is from 0 to 1023 or vcc/1024 split
   to get inches divide by 2. 
   Since this will always be 254 or less it fits in a byte
   */
+  int prevFront = wallDistances[frontPin];
+  int prevLeft = wallDistances[leftPin];
+  int prevRight = wallDistances[rightPin];
+  
   wallDistances[frontPin] = (byte)(analogRead(frontPin)/2);
   wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
   wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
-  wallDistances[backPin] = (byte)(analogRead(backPin)/2);
+
+  if(prevFront - wallDistances[frontPin] < 50 /*TODO: Insert val in inches here*/) {
+    left.write(90); // all stop
+    right.write(90); // all stop
+    return OBSTACLE;
+  }
+  
+  
+}
+
+void Robot::drive(){
+  driveState 
 }
 
