@@ -100,7 +100,7 @@ void Robot::turn(direction dir){
 }
 
 void Robot::turn(int deg){
-  
+  float error = 
 }
 
 Gyro::Gyro(){
