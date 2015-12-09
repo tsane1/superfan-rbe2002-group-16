@@ -101,7 +101,8 @@ void Robot::turn(direction dir){
 
 void Robot::turn(int deg){
   double err = deg - this->gyro.getReading();
-  while(abs(error) < 5){
+  while(abs(err) < 5){
+    double control = this->pid.calc(err);
     this->left.write(90 - control);
     this->right.write(90 + control);
   }
