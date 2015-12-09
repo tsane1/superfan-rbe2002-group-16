@@ -13,12 +13,11 @@
 
 #include <Servo.h>
 #include <Wire.h>
-#include "Firefight.h"
-#include "Drive.h"
+#include <L3G.h>
+#include "Robot.h"
 
-DriveController robot();
-Fan fan(/*TODO: Choose pins*/);
-
+Robot rbt();
+#define PULSE_TRIGGER 11
 void setup() {
   pinMode(PULSE_TRIGGER, OUTPUT);
   digitalWrite(PULSE_TRIGGER, HIGH);

@@ -18,27 +18,27 @@
 enum driveState{
   KEEP_GOING, FOUND_OPENING, OBSTACLE
 };
-
+class Tilter{//really just to make stepper motor stepping pretty
+  public:
+  void step(bool dir);//true = downwards
+  int numSteps;
+};
 class Robot{
   public:
-  Robot();
+  Robot();//implemented
   byte wallDistances[4];
   driveState drive();
   void turn(int deg);
   boolean scanForFire();
   void extinguish();//goes to 8 inches away from fire and extinguishes (must be facing fire already)
-  float getZ();
+  float getZ(byte dX);//implemented
   private:
-  void updateUs();
+  void updateUs();//implemented
   Tilter tilt;
   Servo left, right;
-}
+};
 
-class Tilter{//really just to make stepper motor stepping pretty
-  public:
-  void step(bool dir);//true = downwards
-  int numSteps;
-}
+
 //pin defines
 #define lServoPin 4//servos
 #define rServoPin 5
