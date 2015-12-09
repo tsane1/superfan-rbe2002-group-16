@@ -15,13 +15,17 @@
 #include <Servo.h>
 #include <Wire.h>
 #include "L3G.h"
-
 using namespace std;
 
-enum driveState{
-  KEEP_GOING, FOUND_OPENING, OBSTACLE
+enum direction{
+  FORWARD, LEFT, RIGHT, BACKWARD
 };
-class Tilter{//really just to make stepper motor stepping pretty
+
+enum driveState{
+  KEEP_GOING, TURN_LEFT, TURN_RIGHT, OBSTACLE
+};
+
+class Tilter{
   public:
   void step(bool dir);//true = downwards
   int numSteps;
@@ -33,9 +37,11 @@ class Robot{
     Robot();//implemented
     void drive();
     void turn(int deg);
+    void turn(direction dir);
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
+    
   private:
     driveState updateUs();//implemented
     Tilter tilt;
