@@ -63,16 +63,15 @@ driveState Robot::updateUs(){
   wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
   wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
 
-  if(wallDistances[frontPin] < 50 /*TODO: Calibrate and convert value in inches here*/) {
-    this->left.write(90); // all stop
-    this->right.write(90); // all stop
-    return OBSTACLE;
+  if(wallDistances[frontPin] < 50 /*TODO: Calibrate and convert value in inches here*/){
+    if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_LEFT;
+    else return TURN_RIGHT;
   }
   boolean openingLeft = wallDistances[leftPin] - prevLeft > 0;
   boolean openingRight = wallDistances[rightPin] - prevRight > 0;
   if(openingLeft && openingRight){
-    if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_LEFT;
-    else return TURN_RIGHT;
+    if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_RIGHT;
+    else return TURN_LEFT;
   }
   else if(openingLeft) return TURN_LEFT;
   else if(openingRight) return TURN_RIGHT;  
@@ -88,6 +87,7 @@ void Robot::drive(){
     case TURN_LEFT: this->turn(LEFT);
     case TURN_RIGHT: this->turn(RIGHT);
     case OBSTACLE:
+      this->left.write(90); this->right.write(90);
       
  }
 }
