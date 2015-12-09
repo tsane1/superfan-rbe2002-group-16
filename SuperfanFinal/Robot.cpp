@@ -11,7 +11,7 @@
  * START DATE: Dec. 8, 2015
  */
  #include "Robot.h"
-/*this is the sum of distance from base of candle to flame
+/* this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount 
  * in the x direction
  */
@@ -46,8 +46,8 @@ float Robot::getZ(byte dX){
 }
 
 Robot::Robot(){
-  left.attach(lServoPin, 1000, 2000);
-  right.attach(rServoPin, 1000, 2000);
+  left.attach(leftServoPin, 1000, 2000);
+  right.attach(rightServoPin, 1000, 2000);
 }
 void Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
@@ -55,9 +55,9 @@ void Robot::updateUs(){
   to get inches divide by 2. 
   Since this will always be 254 or less it fits in a byte
   */
-  wallDistances[fUsPin] = (byte)(analogRead(fUsPin)/2);
-  wallDistances[lUsPin] = (byte)(analogRead(lUsPin)/2);
-  wallDistances[rUsPin] = (byte)(analogRead(rUsPin)/2);
-  wallDistances[bUsPin] = (byte)(analogRead(bUsPin)/2);
+  wallDistances[frontPin] = (byte)(analogRead(frontPin)/2);
+  wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
+  wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
+  wallDistances[backPin] = (byte)(analogRead(backPin)/2);
 }
 

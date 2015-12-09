@@ -40,13 +40,13 @@ class Robot{
 
 
 //pin defines
-#define lServoPin 4//servos
-#define rServoPin 5
+#define leftServoPin 4//servos
+#define rightServoPin 5
 #define fanPin 10//digital
-#define fUsPin 0//analog
-#define lUsPin 1
-#define rUsPin 2
-#define bUsPin 3
+#define frontPin 0//analog
+#define leftPin 1
+#define rightPin 2
+#define backPin 3
 #define flameSensorPin 4
 #define tiltDirPin 11//stepper motor direction
 #define tiltStepPin 12//stepper motor step pin
