@@ -14,8 +14,8 @@
 #include "Arduino.h"
 #include <Servo.h>
 #include <Wire.h>
-#include "L3G.h"
-using namespace std;
+#include <L3G.h>
+#include "PidController.h"
 
 enum direction{
   FORWARD, LEFT, RIGHT, BACKWARD
@@ -34,7 +34,7 @@ class Tilter{
 class Gyro{
   public:
     Gyro(); // default constructor
-    void init(); // initialize gyro
+    void reset(); // initialize gyro
     float getReading(); // get and calculate reading
     
   private:
@@ -61,6 +61,7 @@ class Robot{
     void turn(int deg);
     void turn(direction dir);
     Tilter tilt;
+    PidController pid;
     Servo left, right;
     Gyro gyro;
 };

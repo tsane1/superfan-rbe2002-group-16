@@ -13,7 +13,7 @@
 
 #include <Servo.h>
 #include <Wire.h>
-#include "L3G.h"
+#include <L3G.h>
 #include "Robot.h"
 
 #define PULSE_TRIGGER 11
