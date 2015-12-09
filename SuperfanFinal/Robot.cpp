@@ -33,79 +33,17 @@
 * for derivation of this formula see attached file
 * @param dX the displacement from ultrasonic sensor to candle base
 */
-float Robot::getZ(byte dX){
-  float theta = initAngle + stepsToDeg(tilt.numSteps);
-  float snsX = offsetX + dX + //distance between pivot and flame
-  //plus the distance between flame sensor and pivot in x direction
-  //gives distance in x between candle and sensor
-  ((pivToSns)/sin(degToRad(90.0-stepsToDeg(tilt.numSteps))));
-  float yFromPivotToFlame = sin(degToRad(90-theta))*
-  ((snsX)/sin(degToRad(theta)));//from law of sines
-  return offsetY + yFromPivotToFlame;
-  //total is offset from ground to pivot + y from pivot to flame
+
+Tilter::Tilter(){
+  pinMode(tiltDirPin, OUTPUT);
+  pinMode(tiltStepPin, OUTPUT);
+
+  digitalWrite(tiltDirPin, LOW);
+  digitalWrite(tiltStepPin, LOW);
 }
 
-Robot::Robot(){
-  left.attach(leftServoPin, 1000, 2000);
-  right.attach(rightServoPin, 1000, 2000);
-  this->gyro.reset();
-}
-driveState Robot::updateUs(){
-  /*Sensors return vcc/512 V per inch with max of 254 inches
-  Since analogRead is from 0 to 1023 or vcc/1024 split
-  to get inches divide by 2. 
-  Since this will always be 254 or less it fits in a byte
-  */
-  byte prevFront = wallDistances[frontPin];
-  byte prevLeft = wallDistances[leftPin];
-  byte prevRight = wallDistances[rightPin];
+void Tilter::step(bool dir){
   
-  wallDistances[frontPin] = (byte)(analogRead(frontPin)/2);
-  wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
-  wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
-
-  if(wallDistances[frontPin] < 6){
-    if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_LEFT;
-    else return TURN_RIGHT;
-  }
-  boolean openingLeft = wallDistances[leftPin] - prevLeft > 1;
-  boolean openingRight = wallDistances[rightPin] - prevRight > 1;
-  if(openingLeft && openingRight){
-    if(wallDistances[leftPin] > wallDistances[rightPin]) return TURN_RIGHT;
-    else return TURN_LEFT;
-  }
-  else if(openingLeft) return TURN_LEFT;
-  else if(openingRight) return TURN_RIGHT;  
-  else return KEEP_GOING;
-}
-
-void Robot::drive(){
-  this->left.write(120);
-  this->right.write(60);
-  
-  switch(this->updateUs()){
-    case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(LEFT); break;
-    case TURN_RIGHT: this->turn(RIGHT); break;
- }
-}
-
-void Robot::turn(direction dir){
-  switch(dir){
-    case FORWARD: break;
-    case LEFT: this->turn(90); break;
-    case RIGHT: this->turn(-90); break;
-    case BACKWARD: this->turn(180); break;
-  }
-}
-
-void Robot::turn(int deg){
-  double err = deg - this->gyro.getReading();
-  while(abs(err) < 5){
-    double control = this->pid.calc(err);
-    this->left.write(90 - control);
-    this->right.write(90 + control);
-  }
 }
 
 Gyro::Gyro(){
@@ -127,5 +65,73 @@ float Gyro::getReading(){
   this->gyro_z += this->gyro_zold;
   this->gyro_zold = this->gyro_z;
   return gyro_z;
+}
+
+Robot::Robot(){
+  this->left.attach(leftServoPin, 1000, 2000);
+  this->right.attach(rightServoPin, 1000, 2000);
+  
+  this->gyro.reset();
+  this->gotFire = false;
+}
+
+float Robot::getZ(byte dX){
+  float theta = initAngle + stepsToDeg(tilt.numSteps);
+  float snsX = offsetX + dX + //distance between pivot and flame
+  //plus the distance between flame sensor and pivot in x direction
+  //gives distance in x between candle and sensor
+  ((pivToSns)/sin(degToRad(90.0-stepsToDeg(tilt.numSteps))));
+  float yFromPivotToFlame = sin(degToRad(90-theta))*
+  ((snsX)/sin(degToRad(theta)));//from law of sines
+  return offsetY + yFromPivotToFlame;
+  //total is offset from ground to pivot + y from pivot to flame
+}
+
+driveState Robot::updateUs(){
+  /*Sensors return vcc/512 V per inch with max of 254 inches
+  Since analogRead is from 0 to 1023 or vcc/1024 split
+  to get inches divide by 2. 
+  Since this will always be 254 or less it fits in a byte
+  */
+  wallDistances[frontPin] = (byte)(analogRead(frontPin)/2);
+  wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
+  wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
+
+  if(wallDistances[rightPin] > 40) return TURN_RIGHT;
+  else if(wallDistances[frontPin] < 10) return TURN_LEFT;
+  else return KEEP_GOING;
+}
+
+void Robot::drive(){
+  this->left.write(120);
+  this->right.write(60);
+  
+  switch(this->updateUs()){
+    case KEEP_GOING: break;
+    case TURN_LEFT: this->turn(90); break; // left
+    case TURN_RIGHT: this->turn(-90); break; // right
+  }
+}
+
+void Robot::turn(int deg){
+  this->gyro.reset();
+  while(abs(deg - this->gyro.getReading()) < 5){
+    double control = this->pid.calc(deg - this->gyro.getReading());
+    this->left.write(90 + control);
+    this->right.write(90 + control);
+  }
+  this->left.write(120);
+  this->right.write(60);
+  delay(1000);
+  this->left.write(90);
+  this->right.write(90);
+}
+
+boolean Robot::scanForFire(){
+
+}
+
+void Robot::extinguish(){
+
 }
 

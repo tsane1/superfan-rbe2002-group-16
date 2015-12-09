@@ -27,8 +27,9 @@ enum driveState{
 
 class Tilter{
   public:
-  void step(bool dir);//true = downwards
-  int numSteps;
+    Tilter();
+    void step(bool dir);//true = downwards
+    int numSteps;
 };
 
 class Gyro{
@@ -49,7 +50,7 @@ class Gyro{
 class Robot{
   public:
     byte wallDistances[4];
-    
+        
     Robot();//implemented
     void drive();
     boolean scanForFire();
@@ -59,7 +60,7 @@ class Robot{
   private:
     driveState updateUs();//implemented
     void turn(int deg);
-    void turn(direction dir);
+    boolean gotFire;
     Tilter tilt;
     PidController pid;
     Servo left, right;

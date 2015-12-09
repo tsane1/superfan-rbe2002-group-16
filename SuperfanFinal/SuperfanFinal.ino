@@ -18,7 +18,7 @@
 
 #define PULSE_TRIGGER 11
 
-Robot superfan();
+Robot superfan;
 
 void setup() {
   pinMode(PULSE_TRIGGER, OUTPUT);
@@ -30,6 +30,10 @@ void setup() {
   Wire.begin();
 }
 
+long timer = 0;
+long lastTime = 0;
+long elapsedTime;
+
 void loop() {
-  
+  superfan.drive();
 }
