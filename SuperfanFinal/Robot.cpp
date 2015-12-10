@@ -89,8 +89,8 @@ float Robot::getZ(byte dX){
   //total is offset from ground to pivot + y from pivot to flame
 }
 void Robot::goFwd(){
-  left.write(120);
-  right.write(60);
+  left.write(60);
+  right.write(120);
 }
 driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
@@ -108,8 +108,8 @@ driveState Robot::updateUs(){
 }
 
 void Robot::drive(){
-  this->left.write(120);
-  this->right.write(60);
+  this->left.write(60);
+  this->right.write(120);
   
   switch(this->updateUs()){
     case KEEP_GOING: break;
