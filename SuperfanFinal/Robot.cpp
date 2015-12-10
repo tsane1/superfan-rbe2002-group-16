@@ -14,18 +14,19 @@
 /* this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount 
  * in the x direction
+ * ultra to pivot is 1.5 candle is 2.4 on average
  */
-#define offsetX 0/*TODO fill in real value*/
+#define offsetX 3.9
 /* this is the offset from the floor to the pivot point 
  *  of the fan mount
  */
-#define offsetY 0/*TODO fill in real value*/
+#define offsetY 9
 /* converts from degrees to radians
  */
  #define initAngle 90.0
  #define degreesPerStep 1.8
  //distance from piv to sensor in straight line
- #define pivToSns 0 /*TODOD fill in real value*/
+ #define pivToSns 3.5 /*TODOD fill in real value*/
  #define degToRad(deg) (deg*PI/180)
  #define stepsToDeg(steps) (degreesPerStep*steps)
 /*Gets the height of the flame based on distance
@@ -33,50 +34,6 @@
 * for derivation of this formula see attached file
 * @param dX the displacement from ultrasonic sensor to candle base
 */
-
-Tilter::Tilter(){
-  pinMode(tiltDirPin, OUTPUT);
-  pinMode(tiltStepPin, OUTPUT);
-
-  digitalWrite(tiltDirPin, LOW);
-  digitalWrite(tiltStepPin, LOW);
-}
-
-void Tilter::step(bool dir){
-  
-}
-
-Gyro::Gyro(){
-  this->reset();
-}
-
-void Gyro::reset(){
-  if (!this->gyro.init()) // gyro init
-  {
-    Serial.println("Failed to autodetect gyro type!");
-    while (1); 
-  }
-  this->gyro.enableDefault();
-}
-
-float Gyro::getReading(){
-  this->gyro.read();
-  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * this->G_Dt;
-  this->gyro_z += this->gyro_zold;
-  this->gyro_zold = this->gyro_z;
-  return gyro_z;
-}
-
-Robot::Robot(){
-  Wire.begin();
-  this->left.attach(leftServoPin, 1000, 2000);
-  this->right.attach(rightServoPin, 1000, 2000);
-  this->lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
-  this->rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
-  this->gyro.reset();
-  this->gotFire = false;
-}
-
 float Robot::getZ(byte dX){
   float theta = initAngle + stepsToDeg(tilt.numSteps);
   float snsX = offsetX + dX + //distance between pivot and flame
@@ -88,6 +45,61 @@ float Robot::getZ(byte dX){
   return offsetY + yFromPivotToFlame;
   //total is offset from ground to pivot + y from pivot to flame
 }
+Tilter::Tilter(){
+
+}
+void Tilter::init(){
+  pinMode(tiltDirPin, OUTPUT);
+  pinMode(tiltStepPin, OUTPUT);
+  digitalWrite(tiltDirPin, LOW);
+  digitalWrite(tiltStepPin, LOW);
+}
+void Tilter::step(bool dir){
+  
+}
+
+Gyro::Gyro(){
+}
+void Gyro::init(){
+  Serial.println("Gyro init");
+  reset();
+  Serial.println("Done");
+}
+void Gyro::reset(){
+  if (!gyro.init()) // gyro init
+  {
+    Serial.println("Failed to autodetect gyro type!");
+    while (1); 
+  }
+  gyro.enableDefault();
+}
+
+float Gyro::getReading(){
+  this->gyro.read();
+  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * this->G_Dt;
+  this->gyro_z += this->gyro_zold;
+  this->gyro_zold = this->gyro_z;
+  return gyro_z;
+}
+
+Robot::Robot(){
+}
+void Robot::init(){  
+  Serial.println("Starting");
+  left.attach(leftServoPin, 1000, 2000);
+  right.attach(rightServoPin, 1000, 2000);
+  Serial.println("Servos attached!");
+  lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
+  Serial.println("Left encoder done!");
+  rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
+  Serial.println("Right encoder done!");
+  gyro.init();
+  Serial.println("Gyro inited!!!!!!");
+  tilt.init();
+  Serial.println("Tilter inited!");
+  gotFire = false;
+}
+
 void Robot::goFwd(){
   left.write(60);
   right.write(120);

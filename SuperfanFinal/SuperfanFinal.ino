@@ -15,13 +15,21 @@
 #include <Wire.h>
 #include <L3G.h>
 #include <I2CEncoder.h>
+#include <LiquidCrystal.h>
 #include "Robot.h"
 
 #define PULSE_TRIGGER 11
+#define start 29
 
+LiquidCrystal lcd(40, 41, 42, 43, 44, 45);
 Robot superfan;
-
 void setup() {
+  Serial.begin(9600);
+  Serial.println("ON");
+  Wire.begin();
+  superfan.init();
+  pinMode(start, INPUT_PULLUP);
+  while(digitalRead(start)==HIGH);//don't go until start is pressed
   pinMode(PULSE_TRIGGER, OUTPUT);
   digitalWrite(PULSE_TRIGGER, HIGH);
   delay(20);
