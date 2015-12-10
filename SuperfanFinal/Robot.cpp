@@ -68,9 +68,11 @@ float Gyro::getReading(){
 }
 
 Robot::Robot(){
+  Wire.begin();
   this->left.attach(leftServoPin, 1000, 2000);
   this->right.attach(rightServoPin, 1000, 2000);
-  
+  this->lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
+  this->rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
   this->gyro.reset();
   this->gotFire = false;
 }
@@ -86,7 +88,10 @@ float Robot::getZ(byte dX){
   return offsetY + yFromPivotToFlame;
   //total is offset from ground to pivot + y from pivot to flame
 }
-
+void Robot::goFwd(){
+  left.write(120);
+  right.write(60);
+}
 driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
   Since analogRead is from 0 to 1023 or vcc/1024 split

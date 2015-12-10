@@ -15,6 +15,7 @@
 #include <Servo.h>
 #include <Wire.h>
 #include <L3G.h>
+#include <I2CEncoder.h>
 #include "PidController.h"
 
 enum direction{
@@ -53,6 +54,7 @@ class Robot{
         
     Robot();//implemented
     void drive();
+    void goFwd();//test only.
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
@@ -65,6 +67,7 @@ class Robot{
     PidController pid;
     Servo left, right;
     Gyro gyro;
+    I2CEncoder lEnc, rEnc;
 };
 
 
@@ -79,3 +82,5 @@ class Robot{
 #define flameSensorPin 4
 #define tiltDirPin 11 //stepper motor direction
 #define tiltStepPin 12 //stepper motor step pin
+//encoder is 1 rotation / 39.2 ticks * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
+#define inchesPerTick  0.194740943877551
