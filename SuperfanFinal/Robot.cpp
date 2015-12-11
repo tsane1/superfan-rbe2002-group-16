@@ -96,18 +96,12 @@ float Gyro::getReading(){
 Robot::Robot(){
 }
 void Robot::init(){  
-  Serial.println("Starting");
   left.attach(leftServoPin, 1000, 2000);
   right.attach(rightServoPin, 1000, 2000);
-  Serial.println("Servos attached!");
   lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
-  Serial.println("Left encoder done!");
   rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
-  Serial.println("Right encoder done!");
   gyro.init();
-  Serial.println("Gyro initiated");
   tilt.init();
-  Serial.println("Tilter initiated");
   gotFire = false;
   this->pid.setConstants(0.6, 0.005, 0.7);
   this->pid.setLimits(-30,30);
@@ -127,6 +121,8 @@ driveState Robot::updateUs(){
   wallDistances[leftPin] = (analogRead(leftPin)/2);
   wallDistances[rightPin] = (analogRead(rightPin)/2);
   wallDistances[backPin] = (analogRead(backPin)/2);
+  lcd2.setCursor(0,0);
+  lcd2.print(wallDistances[frontPin]);
   if(wallDistances[rightPin] > 40) return TURN_RIGHT;
   else if(wallDistances[frontPin] < 10) return TURN_LEFT;
   else return KEEP_GOING;
@@ -135,11 +131,10 @@ driveState Robot::updateUs(){
 void Robot::drive(){
   this->left.write(60);
   this->right.write(120);
-  
   switch(this->updateUs()){
     case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(-90); break; // left
-    case TURN_RIGHT: this->turn(90); break; // right
+    case TURN_LEFT: this->turn(-rightAngle); break; // left
+    case TURN_RIGHT: this->turn(rightAngle); break; // right
   }
 }
 
@@ -149,6 +144,9 @@ void Robot::turn(int deg){
   this->left.write(90);
   this->right.write(90);
   delay(500);
+  //lcd2.clear();
+  //lcd2.print("Gyro Reset");
+  this->pid.reset();
   this->gyro.reset();
   float gyroVal;
   do{
@@ -164,11 +162,9 @@ void Robot::turn(int deg){
     delay(5);
   }
   while(abs(deg - gyroVal) > 1);
-  //this->left.write(60);
-  //this->right.write(120);
-  //delay(1000);
-  //lcd2.clear();
-  //lcd2.print("Turn complete");
+  this->left.write(60);
+  this->right.write(120);
+  delay(2000);
   this->left.write(90);
   this->right.write(90);
 }

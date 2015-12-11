@@ -69,7 +69,6 @@ class Gyro {
 class Robot {
   public:
     int wallDistances[4];
-    driveState updateUs();//implemented
     Robot();//implemented
 
     void init();
@@ -78,15 +77,15 @@ class Robot {
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
-    void turn(int deg);
-     Gyro gyro;
-  private:
     
+  private:
+    driveState updateUs();//implemented
+    void turn(int deg);
     boolean gotFire;
     Tilter tilt;
     PidController pid;
     Servo left, right;
-   
+    Gyro gyro;
     I2CEncoder lEnc, rEnc;
     
 };
@@ -105,3 +104,4 @@ class Robot {
 #define tiltStepPin 9 //stepper motor step pin
 //encoder is 1 rotation / 39.2 ticks * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.194740943877551
+#define rightAngle 82//because for some reason gyro reading of 82 degrees is 90 degrees of real life
