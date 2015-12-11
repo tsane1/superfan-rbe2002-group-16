@@ -58,22 +58,5 @@ long elapsedTime;
 int mode = 1;
 
 void loop() {
-  Serial.println("Updating");
-  superfan.updateUs();
-  byte front = superfan.wallDistances[0];
-  byte left =  superfan.wallDistances[1];
-  byte right = superfan.wallDistances[2];
-  byte back = superfan.wallDistances[3];
-
- Serial.print("front ");
- Serial.println(front);
- Serial.print("back ");
- Serial.println(back);
- Serial.print("left ");
- Serial.println(left);
- Serial.print("right ");
- Serial.println(right);
-
- delay(1000);
-  
+  superfan.drive(); 
 }

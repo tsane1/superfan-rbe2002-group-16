@@ -67,7 +67,7 @@ class Gyro {
 
 class Robot {
   public:
-    byte wallDistances[4];
+    int wallDistances[4];
     driveState updateUs();//implemented
     Robot();//implemented
 
@@ -77,7 +77,6 @@ class Robot {
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
-
   private:
     void turn(int deg);
     boolean gotFire;
@@ -86,7 +85,7 @@ class Robot {
     Servo left, right;
     Gyro gyro;
     I2CEncoder lEnc, rEnc;
-    LiquidCrystal *lcd;
+    
 };
 
 

@@ -62,16 +62,22 @@ Gyro::Gyro(){
 }
 void Gyro::init(){
   Serial.println("Gyro init");
-  reset();
-  Serial.println("Done");
-}
-void Gyro::reset(){
   if (!gyro.init()) // gyro init
   {
     Serial.println("Failed to autodetect gyro type!");
     while (1); 
   }
   gyro.enableDefault();
+  reset();
+  Serial.println("Done");
+}
+void Gyro::reset(){
+  for(int i =0;i<100;i++){  // takes 100 samples of the gyro
+    gyro.read();
+    this->gerrz += gyro.g.z;
+    delay(25);
+  } 
+  this->gerrz = (this->gerrz)/100;
 }
 
 float Gyro::getReading(){
@@ -79,7 +85,7 @@ float Gyro::getReading(){
   this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * this->G_Dt;
   this->gyro_z += this->gyro_zold;
   this->gyro_zold = this->gyro_z;
-  return gyro_z;
+  return gyro_z * 180/PI; // to degrees
 }
 
 Robot::Robot(){
@@ -98,6 +104,7 @@ void Robot::init(){
   tilt.init();
   Serial.println("Tilter initiated");
   gotFire = false;
+  this->pid.setConstants(0.15, 0, 0.5);
 }
 
 void Robot::goFwd(){
@@ -110,32 +117,45 @@ driveState Robot::updateUs(){
   to get inches divide by 2. 
   Since this will always be 254 or less it fits in a byte
   */
-  wallDistances[frontPin] = (byte)(analogRead(frontPin)/2);
-  wallDistances[leftPin] = (byte)(analogRead(leftPin)/2);
-  wallDistances[rightPin] = (byte)(analogRead(rightPin)/2);
-
+  wallDistances[frontPin] = (analogRead(frontPin)/2);
+  wallDistances[leftPin] = (analogRead(leftPin)/2);
+  wallDistances[rightPin] = (analogRead(rightPin)/2);
+  wallDistances[backPin] = (analogRead(backPin)/2);
   if(wallDistances[rightPin] > 40) return TURN_RIGHT;
   else if(wallDistances[frontPin] < 10) return TURN_LEFT;
   else return KEEP_GOING;
 }
 
 void Robot::drive(){
-  this->left.write(120);
-  this->right.write(60);
+  this->left.write(60);
+  this->right.write(120);
   
   switch(this->updateUs()){
     case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(90); break; // left
-    case TURN_RIGHT: this->turn(-90); break; // right
+    case TURN_LEFT: this->turn(-90); break; // left
+    case TURN_RIGHT: this->turn(90); break; // right
   }
 }
 
+LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
+
 void Robot::turn(int deg){
+  this->left.write(90);
+  this->right.write(90);
+  delay(500);
   this->gyro.reset();
-  while(abs(deg - this->gyro.getReading()) < 5){
-    double control = this->pid.calc(deg - this->gyro.getReading());
+  while(abs(deg - this->gyro.getReading()) > 5){
+    lcd2.print("gyro: ");
+    lcd2.print(this->gyro.getReading());
+    delay(1000);
+    lcd2.clear();
+    double control = this->pid.calc((double)(deg - this->gyro.getReading()));
+    lcd2.print("control: ");
+    lcd2.print(control);
+    delay(1000);
+    lcd2.clear();
     this->left.write(90 + control);
-    this->right.write(90 + control);
+    this->right.write(90);
   }
   this->left.write(60);
   this->right.write(120);
