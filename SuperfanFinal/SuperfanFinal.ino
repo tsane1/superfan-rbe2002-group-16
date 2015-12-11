@@ -1,13 +1,13 @@
 /* FILENAME: SuperfanFinal.ino
- * 
- * BRIEF: 
- * 
+ *
+ * BRIEF:
+ *
  * AUTHORS:
  * @author Tanuj Sane
  * @author Dominic Cupo
  * @author Annie Hernandez
  * @author Patrick Murphy
- * 
+ *
  * START DATE: Dec. 1, 2015
  */
 
@@ -23,13 +23,28 @@
 
 LiquidCrystal lcd(40, 41, 42, 43, 44, 45);
 Robot superfan;
+
 void setup() {
   Serial.begin(9600);
+  lcd.begin(16 , 2);
+  
   Serial.println("ON");
+  
   Wire.begin();
   superfan.init();
+  
+  lcd.print("Initiated");
+  delay(500);
+  
   pinMode(start, INPUT_PULLUP);
-  while(digitalRead(start)==HIGH);//don't go until start is pressed
+  
+  lcd.clear();
+  lcd.print("Wait on Button");
+  
+  while (digitalRead(start) == HIGH); //don't go until start is pressed
+  
+  lcd.clear();
+  lcd.print("Firefighting!");
   pinMode(PULSE_TRIGGER, OUTPUT);
   digitalWrite(PULSE_TRIGGER, HIGH);
   delay(20);
@@ -40,8 +55,25 @@ void setup() {
 long timer = 0;
 long lastTime = 0;
 long elapsedTime;
+int mode = 1;
 
 void loop() {
-  //superfan.drive();
-  superfan.goFwd();
+  Serial.println("Updating");
+  superfan.updateUs();
+  byte front = superfan.wallDistances[0];
+  byte left =  superfan.wallDistances[1];
+  byte right = superfan.wallDistances[2];
+  byte back = superfan.wallDistances[3];
+
+ Serial.print("front ");
+ Serial.println(front);
+ Serial.print("back ");
+ Serial.println(back);
+ Serial.print("left ");
+ Serial.println(left);
+ Serial.print("right ");
+ Serial.println(right);
+
+ delay(1000);
+  
 }

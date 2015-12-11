@@ -1,13 +1,13 @@
 /* FILENAME: Robot.h
- * 
- * BRIEF: 
- * 
+ *
+ * BRIEF:
+ *
  * AUTHORS:
  * @author Tanuj Sane
  * @author Dominic Cupo
  * @author Annie Hernandez
  * @author Patrick Murphy
- * 
+ *
  * START DATE: Dec. 8, 2015
  */
 #pragma once
@@ -19,15 +19,28 @@
 #include <LiquidCrystal.h>
 #include "PidController.h"
 
-enum direction{
-  FORWARD, LEFT, RIGHT, BACKWARD
+enum direction {
+  FORWARD,
+  LEFT,
+  RIGHT,
+  BACKWARD
 };
 
-enum driveState{
-  KEEP_GOING, TURN_LEFT, TURN_RIGHT, OBSTACLE
+enum driveState {
+  KEEP_GOING,
+  TURN_LEFT,
+  TURN_RIGHT,
+  OBSTACLE
 };
 
-class Tilter{
+enum mode {
+  TESTDRIVE,
+  DRIVE2FIRE,
+  SWEEPING,
+  EXT
+};
+
+class Tilter {
   public:
     Tilter();
     void init();
@@ -35,37 +48,37 @@ class Tilter{
     int numSteps;
 };
 
-class Gyro{
+class Gyro {
   public:
     Gyro(); // default constructor
     void init();
     void reset(); // initialize gyro
     float getReading(); // get and calculate reading
-    
+
   private:
     L3G gyro;
     float gyro_z; //gyro x val
     float gyro_zold; //gyro cummulative z value
     float gerrz; // Gyro 7 error
-    float G_gain=.00875; // gyros gain factor for 250deg/sec
-    float G_Dt=0.005;    // Integration time (DCM algorithm)  We will run the integration loop at 50Hz if possible
-    
+    static const float G_gain = .00875; // gyros gain factor for 250deg/sec
+    static const float G_Dt = 0.005;  // Integration time (DCM algorithm)  We will run the integration loop at 50Hz if possible
+
 };
 
-class Robot{
+class Robot {
   public:
     byte wallDistances[4];
-        
+    driveState updateUs();//implemented
     Robot();//implemented
+
     void init();
     void drive();
     void goFwd();//test only.
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
-    
+
   private:
-    driveState updateUs();//implemented
     void turn(int deg);
     boolean gotFire;
     Tilter tilt;

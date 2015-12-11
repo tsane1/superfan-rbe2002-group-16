@@ -94,9 +94,9 @@ void Robot::init(){
   rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
   Serial.println("Right encoder done!");
   gyro.init();
-  Serial.println("Gyro inited!!!!!!");
+  Serial.println("Gyro initiated");
   tilt.init();
-  Serial.println("Tilter inited!");
+  Serial.println("Tilter initiated");
   gotFire = false;
 }
 
@@ -120,8 +120,8 @@ driveState Robot::updateUs(){
 }
 
 void Robot::drive(){
-  this->left.write(60);
-  this->right.write(120);
+  this->left.write(120);
+  this->right.write(60);
   
   switch(this->updateUs()){
     case KEEP_GOING: break;
@@ -137,8 +137,8 @@ void Robot::turn(int deg){
     this->left.write(90 + control);
     this->right.write(90 + control);
   }
-  this->left.write(120);
-  this->right.write(60);
+  this->left.write(60);
+  this->right.write(120);
   delay(1000);
   this->left.write(90);
   this->right.write(90);
