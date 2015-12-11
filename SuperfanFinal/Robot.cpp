@@ -105,6 +105,7 @@ void Robot::init(){
   Serial.println("Tilter initiated");
   gotFire = false;
   this->pid.setConstants(0.15, 0, 0.5);
+  this->pid.setLimits(-90,90);
 }
 
 void Robot::goFwd(){

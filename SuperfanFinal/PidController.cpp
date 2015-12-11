@@ -52,10 +52,9 @@ double PidController::calc(double target, double sensor_value)
 		
 		last_error = error;
 		last_time = now;
+    return output;
 	}
 	else return last_output;
-	
-	return output;
 }
   
 void PidController::reset()
