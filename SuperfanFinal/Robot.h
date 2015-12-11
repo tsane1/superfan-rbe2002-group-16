@@ -57,6 +57,7 @@ class Gyro {
 
   private:
     L3G gyro;
+    long lastReading;
     float gyro_z; //gyro x val
     float gyro_zold; //gyro cummulative z value
     float gerrz; // Gyro 7 error
@@ -77,13 +78,15 @@ class Robot {
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
-  private:
     void turn(int deg);
+     Gyro gyro;
+  private:
+    
     boolean gotFire;
     Tilter tilt;
     PidController pid;
     Servo left, right;
-    Gyro gyro;
+   
     I2CEncoder lEnc, rEnc;
     
 };

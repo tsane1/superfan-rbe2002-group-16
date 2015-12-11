@@ -72,20 +72,24 @@ void Gyro::init(){
   Serial.println("Done");
 }
 void Gyro::reset(){
-  for(int i =0;i<100;i++){  // takes 100 samples of the gyro
+  for(int i =0;i<2000;i++){  // takes 2000 samples of the gyro
     gyro.read();
     this->gerrz += gyro.g.z;
-    delay(25);
+    delay(5);
   } 
-  this->gerrz = (this->gerrz)/100;
+  this->gerrz = (this->gerrz)/2000;
+  gyro_zold = 0;
+  lastReading = micros();
 }
 
 float Gyro::getReading(){
   this->gyro.read();
-  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * this->G_Dt;
+  long deltaReading = micros()-lastReading;
+  lastReading = micros();
+  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * ((float)(deltaReading)/1000000);//time delay since last reading in seconds
   this->gyro_z += this->gyro_zold;
   this->gyro_zold = this->gyro_z;
-  return gyro_z * 180/PI; // to degrees
+  return (gyro_z );
 }
 
 Robot::Robot(){
@@ -104,7 +108,7 @@ void Robot::init(){
   tilt.init();
   Serial.println("Tilter initiated");
   gotFire = false;
-  this->pid.setConstants(0.15, 0, 0.5);
+  this->pid.setConstants(0.8, 0, 0.5);
   this->pid.setLimits(-90,90);
 }
 
@@ -145,22 +149,25 @@ void Robot::turn(int deg){
   this->right.write(90);
   delay(500);
   this->gyro.reset();
-  while(abs(deg - this->gyro.getReading()) > 5){
-    lcd2.print("gyro: ");
-    lcd2.print(this->gyro.getReading());
-    delay(1000);
+  float gyroVal;
+  do{
+    gyroVal = gyro.getReading();
     lcd2.clear();
-    double control = this->pid.calc((double)(deg - this->gyro.getReading()));
-    lcd2.print("control: ");
+    lcd2.print("G");
+    lcd2.print(gyroVal);
+    double control = this->pid.calc((double)(deg - gyroVal));
+    lcd2.print(" C");
     lcd2.print(control);
-    delay(1000);
-    lcd2.clear();
-    this->left.write(90 + control);
+    this->left.write(90 - control);
     this->right.write(90);
+    delay(5);
   }
-  this->left.write(60);
-  this->right.write(120);
-  delay(1000);
+  while(abs(deg - gyroVal) > 5);
+  //this->left.write(60);
+  //this->right.write(120);
+  //delay(1000);
+  //lcd2.clear();
+  //lcd2.print("Turn complete");
   this->left.write(90);
   this->right.write(90);
 }
