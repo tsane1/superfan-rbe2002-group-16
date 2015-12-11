@@ -11,6 +11,7 @@
  * START DATE: Dec. 8, 2015
  */
  #include "Robot.h"
+ LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
 /* this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount 
  * in the x direction
@@ -64,11 +65,11 @@ void Gyro::init(){
   Serial.println("Gyro init");
   if (!gyro.init()) // gyro init
   {
-    Serial.println("Failed to autodetect gyro type!");
+    lcd2.print("No gyro");
     while (1); 
   }
   gyro.enableDefault();
-  reset();
+  //reset();
   Serial.println("Done");
 }
 void Gyro::reset(){
@@ -108,8 +109,8 @@ void Robot::init(){
   tilt.init();
   Serial.println("Tilter initiated");
   gotFire = false;
-  this->pid.setConstants(0.8, 0, 0.5);
-  this->pid.setLimits(-90,90);
+  this->pid.setConstants(0.6, 0.005, 0.7);
+  this->pid.setLimits(-30,30);
 }
 
 void Robot::goFwd(){
@@ -142,7 +143,7 @@ void Robot::drive(){
   }
 }
 
-LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
+
 
 void Robot::turn(int deg){
   this->left.write(90);
@@ -159,10 +160,10 @@ void Robot::turn(int deg){
     lcd2.print(" C");
     lcd2.print(control);
     this->left.write(90 - control);
-    this->right.write(90);
+    this->right.write(90 - control);
     delay(5);
   }
-  while(abs(deg - gyroVal) > 5);
+  while(abs(deg - gyroVal) > 1);
   //this->left.write(60);
   //this->right.write(120);
   //delay(1000);
