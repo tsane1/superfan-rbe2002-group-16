@@ -12,6 +12,24 @@
  */
  #include "Robot.h"
  LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
+ direction turnRight(direction dir){
+  switch(dir){
+    case pX: dir = mY; break;
+    case mY: dir = mX; break;
+    case mX: dir = pY; break;
+    case pY: dir = pX; break; 
+  }
+  return dir;
+}
+ direction turnLeft(direction dir){
+  switch(dir){
+    case pX: dir = pY; break;
+    case mY: dir = pX; break;
+    case mX: dir = mY; break;
+    case pY: dir = mX; break; 
+  }
+  return dir;
+}
 /* this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount 
  * in the x direction
@@ -36,7 +54,7 @@
 * @param dX the displacement from ultrasonic sensor to candle base
 */
 float Robot::getZ(byte dX){
-  float theta = initAngle + stepsToDeg(tilt.numSteps);
+  float theta = initAngle - stepsToDeg((float)tilt.numSteps);
   float snsX = offsetX + dX + //distance between pivot and flame
   //plus the distance between flame sensor and pivot in x direction
   //gives distance in x between candle and sensor
@@ -56,9 +74,21 @@ void Tilter::init(){
   digitalWrite(tiltStepPin, LOW);
 }
 void Tilter::step(bool dir){
-  
+  digitalWrite(tiltDirPin, dir ? HIGH : LOW);
+  digitalWrite(tiltStepPin, HIGH);
+  delay(10);
+  digitalWrite(tiltStepPin, LOW);
+  delay(10);
+  numSteps+= dir? 1: -1;
 }
-
+void Tilter::goTo(int stepNum){
+  while(stepNum>numSteps){//goal is higher than current
+    step(up);
+  }
+  while(stepNum<numSteps){//goal is lower than current
+    step(down);
+  }
+}
 Gyro::Gyro(){
 }
 void Gyro::init(){
@@ -93,13 +123,19 @@ float Gyro::getReading(){
   return (gyro_z );
 }
 
+void Gyro::resetHeading(){
+  gyro_zold = 0;
+}
 Robot::Robot(){
 }
 void Robot::init(){  
+  x = 0;
+  y = 0;
   left.attach(leftServoPin, 1000, 2000);
   right.attach(rightServoPin, 1000, 2000);
   lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
   rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
+  lEnc.setReversed(true);
   gyro.init();
   tilt.init();
   gotFire = false;
@@ -108,8 +144,8 @@ void Robot::init(){
 }
 
 void Robot::goFwd(){
-  left.write(60);
-  right.write(120);
+  left.write(80);
+  right.write(100);
 }
 driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
@@ -123,7 +159,8 @@ driveState Robot::updateUs(){
   wallDistances[backPin] = (analogRead(backPin)/2);
   //this->front = this->front || wallDistances[frontPin] < 10;
   lcd2.clear();
-  lcd2.print(wallDistances[frontPin]);
+  lcd2.setCursor(14,1);
+  lcd2.print(wallDistances[rightPin]);
   if(wallDistances[rightPin] > 20) return TURN_RIGHT;
   else if(wallDistances[frontPin] < 8){
     if(front){
@@ -139,21 +176,59 @@ driveState Robot::updateUs(){
 }
 
 void Robot::drive(){
-  this->left.write(60);
-  this->right.write(120);
+  if(analogRead(sideFlameSensorPin)<flameCutOff){
+    alignToFlame();
+    turn(leftTurn);
+    turnLeft(dir);
+    extinguish();
+  }
+  
   switch(this->updateUs()){
-    case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(leftTurn); break; // left
-    case TURN_RIGHT: this->turn(rightTurn); break; // right
+    case KEEP_GOING:this->left.write(65); this->right.write(115);break;
+    case TURN_LEFT: this->turn(leftTurn); turnLeft(dir); break; // left
+    case TURN_RIGHT: delay(150); this->turn(rightTurn); turnRight(dir); break; // right
   }
 }
-
+void Robot::alignToFlame(){//TODO: implement
+  left.write(90);
+  right.write(90);
+  updateDist();
+  resetEnc();
+  int minReading = flameCutOff;
+  int minDisp = 0;
+  byte index = 0;
+  bool done = false;
+  while(!done){
+    int temp = analogRead(sideFlameSensorPin);
+    delay(1);
+    temp+= analogRead(sideFlameSensorPin);
+    delay(1);
+    temp+= analogRead(sideFlameSensorPin);
+    temp = temp/3;
+    if(temp<minReading){
+      minReading = temp;
+      minDisp = updateEnc();
+    }
+    if(temp>flameCutOff)
+      done = true;//you have gone past the candle
+    index++;
+    left.write(70);
+    right.write(110);
+    while(updateEnc()<0.5*index);
+    left.write(90);
+    right.write(90);
+  }
+  left.write(110);
+  right.write(70);
+  while(updateEnc()>minDisp);
+}
 
 
 void Robot::turn(float deg){
   this->left.write(90);
   this->right.write(90);
   delay(500);
+  updateDist();
   lcd2.clear();
   lcd2.print("Turning: ");
   lcd2.print(deg<0 ? "left" : "right");
@@ -173,18 +248,57 @@ void Robot::turn(float deg){
     delay(5);
   }
   while(abs(deg - gyroVal) > 1);
-  this->left.write(60);
-  this->right.write(120);
-  delay(1750);
+  resetEnc();
+  if(deg>0){//right turn only because then needs to reestablish a wall contact.
+  this->left.write(65);
+  this->right.write(115);
+  delay(2000);
+  }
   this->left.write(90);
   this->right.write(90);
 }
-
-boolean Robot::scanForFire(){
-
+void Robot::resetEnc(){
+  lEnc.zero();
+  rEnc.zero();
 }
-
+void Robot::updateDist(){
+  switch(dir){
+    case pX: x+= updateEnc(); break;
+    case pY: y+= updateEnc(); break;
+    case mX: x-=updateEnc(); break;
+    case mY: y-=updateEnc(); break;
+  }
+}
+double Robot::updateEnc(){
+  return (lEnc.getPosition()+rEnc.getPosition())/2;//average distance turned
+}
+void Robot::sweep(){
+  tilt.goTo(-25);
+  int minValue = 10000;
+  int minStep = -75;
+  while(tilt.numSteps<30){
+    int temp = analogRead(flameHeightSensorPin);
+    lcd2.clear();
+    lcd2.print("R");
+    lcd2.print(temp);
+    lcd2.print("S");
+    lcd2.print(tilt.numSteps);
+    if(temp<minValue){
+      minValue = temp;
+      minStep = tilt.numSteps;
+    }
+    delay(500);
+    tilt.step(tilt.up);
+  }
+  tilt.goTo(minStep);
+    lcd2.clear();
+    lcd2.print("R");
+    lcd2.print(analogRead(flameHeightSensorPin));
+    lcd2.print("S");
+    lcd2.print(tilt.numSteps);
+}
 void Robot::extinguish(){
-
+sweep();
+while(true);
 }
 

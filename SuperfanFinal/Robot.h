@@ -20,12 +20,13 @@
 #include "PidController.h"
 
 enum direction {
-  FORWARD,
-  LEFT,
-  RIGHT,
-  BACKWARD
+  pX,
+  mY,
+  mX,
+  pY
 };
-
+direction turnRight(direction dir);
+direction turnLeft(direction dir);
 enum driveState {
   KEEP_GOING,
   TURN_LEFT,
@@ -46,6 +47,9 @@ class Tilter {
     void init();
     void step(bool dir);//true = downwards
     int numSteps;
+    const bool down = false;
+    const bool up = true;
+    void goTo(int stepNum);
 };
 
 class Gyro {
@@ -54,7 +58,7 @@ class Gyro {
     void init();
     void reset(); // initialize gyro
     float getReading(); // get and calculate reading
-
+    void resetHeading();
   private:
     L3G gyro;
     long lastReading;
@@ -74,20 +78,27 @@ class Robot {
     void init();
     void drive();
     void goFwd();//test only.
-    boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
     void turn(float deg);
+    void sweep();//sweeps the stepper to find the fire.
+    Tilter tilt;
   private:
     driveState updateUs();//implemented
     
     boolean gotFire;
-    Tilter tilt;
+    void alignToFlame();
+    
     PidController pid;
     Servo left, right;
     Gyro gyro;
     I2CEncoder lEnc, rEnc;
     boolean front;
+    double x,y;
+    void updateDist();
+    double updateEnc();
+    void resetEnc();
+    direction dir = pX;
 };
 
 
@@ -99,10 +110,12 @@ class Robot {
 #define leftPin 1
 #define rightPin 2
 #define backPin 3
-#define flameSensorPin 4
-#define tiltDirPin 8 //stepper motor direction
-#define tiltStepPin 9 //stepper motor step pin
+#define sideFlameSensorPin 5
+#define flameHeightSensorPin 4
+#define tiltDirPin 7 //stepper motor direction
+#define tiltStepPin 8 //stepper motor step pin
 //encoder is 1 rotation / 39.2 ticks * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.194740943877551
-#define rightTurn 85//because for some reason gyro reading of 82 degrees is 90 degrees of real life
-#define leftTurn -84.7
+#define rightTurn 83//because for some reason gyro reading of 85 degrees is 90 degrees of real life
+#define leftTurn -77.0
+#define flameCutOff 900

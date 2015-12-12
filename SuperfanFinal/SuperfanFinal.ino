@@ -50,6 +50,7 @@ void setup() {
   delay(20);
   digitalWrite(PULSE_TRIGGER, LOW);
   pinMode(PULSE_TRIGGER, INPUT);//set to high Z state
+  superfan.sweep();
 }
 
 long timer = 0;
@@ -58,5 +59,6 @@ long elapsedTime;
 int mode = 1;
 
 void loop() {
-  superfan.drive(); 
+  //superfan.drive();
+  
 }
