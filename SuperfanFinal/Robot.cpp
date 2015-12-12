@@ -73,12 +73,12 @@ void Gyro::init(){
   Serial.println("Done");
 }
 void Gyro::reset(){
-  for(int i =0;i<100;i++){  // takes 2000 samples of the gyro
+  for(int i =0;i<2000;i++){  // takes 2000 samples of the gyro
     gyro.read();
     this->gerrz += gyro.g.z;
     delay(5);
   } 
-  this->gerrz = (this->gerrz)/100;
+  this->gerrz = (this->gerrz)/2000;
   gyro_zold = 0;
   lastReading = micros();
 }
@@ -124,8 +124,8 @@ driveState Robot::updateUs(){
   //this->front = this->front || wallDistances[frontPin] < 10;
   lcd2.clear();
   lcd2.print(wallDistances[frontPin]);
-  if(wallDistances[rightPin] > 40) return TURN_RIGHT;
-  else if(wallDistances[frontPin] < 10){
+  if(wallDistances[rightPin] > 20) return TURN_RIGHT;
+  else if(wallDistances[frontPin] < 8){
     if(front){
       front = false;
       return TURN_LEFT;
@@ -143,19 +143,20 @@ void Robot::drive(){
   this->right.write(120);
   switch(this->updateUs()){
     case KEEP_GOING: break;
-    case TURN_LEFT: this->turn(-rightAngle); break; // left
-    case TURN_RIGHT: this->turn(rightAngle); break; // right
+    case TURN_LEFT: this->turn(leftTurn); break; // left
+    case TURN_RIGHT: this->turn(rightTurn); break; // right
   }
 }
 
 
 
-void Robot::turn(int deg){
+void Robot::turn(float deg){
   this->left.write(90);
   this->right.write(90);
   delay(500);
-  //lcd2.clear();
-  //lcd2.print("Gyro Reset");
+  lcd2.clear();
+  lcd2.print("Turning: ");
+  lcd2.print(deg<0 ? "left" : "right");
   this->pid.reset();
   this->gyro.reset();
   float gyroVal;
@@ -174,7 +175,7 @@ void Robot::turn(int deg){
   while(abs(deg - gyroVal) > 1);
   this->left.write(60);
   this->right.write(120);
-  delay(500);
+  delay(1750);
   this->left.write(90);
   this->right.write(90);
 }

@@ -77,10 +77,10 @@ class Robot {
     boolean scanForFire();
     void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
     float getZ(byte dX);//implemented
-    
+    void turn(float deg);
   private:
     driveState updateUs();//implemented
-    void turn(int deg);
+    
     boolean gotFire;
     Tilter tilt;
     PidController pid;
@@ -104,4 +104,5 @@ class Robot {
 #define tiltStepPin 9 //stepper motor step pin
 //encoder is 1 rotation / 39.2 ticks * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.194740943877551
-#define rightAngle 80//because for some reason gyro reading of 82 degrees is 90 degrees of real life
+#define rightTurn 85//because for some reason gyro reading of 82 degrees is 90 degrees of real life
+#define leftTurn -84.7
