@@ -73,12 +73,12 @@ void Gyro::init(){
   Serial.println("Done");
 }
 void Gyro::reset(){
-  for(int i =0;i<2000;i++){  // takes 2000 samples of the gyro
+  for(int i =0;i<100;i++){  // takes 2000 samples of the gyro
     gyro.read();
     this->gerrz += gyro.g.z;
     delay(5);
   } 
-  this->gerrz = (this->gerrz)/2000;
+  this->gerrz = (this->gerrz)/100;
   gyro_zold = 0;
   lastReading = micros();
 }
@@ -121,10 +121,20 @@ driveState Robot::updateUs(){
   wallDistances[leftPin] = (analogRead(leftPin)/2);
   wallDistances[rightPin] = (analogRead(rightPin)/2);
   wallDistances[backPin] = (analogRead(backPin)/2);
-  lcd2.setCursor(0,0);
+  //this->front = this->front || wallDistances[frontPin] < 10;
+  lcd2.clear();
   lcd2.print(wallDistances[frontPin]);
   if(wallDistances[rightPin] > 40) return TURN_RIGHT;
-  else if(wallDistances[frontPin] < 10) return TURN_LEFT;
+  else if(wallDistances[frontPin] < 10){
+    if(front){
+      front = false;
+      return TURN_LEFT;
+    }
+    else{
+      front = true;
+      return KEEP_GOING;
+    }
+  }
   else return KEEP_GOING;
 }
 
@@ -164,7 +174,7 @@ void Robot::turn(int deg){
   while(abs(deg - gyroVal) > 1);
   this->left.write(60);
   this->right.write(120);
-  delay(2000);
+  delay(500);
   this->left.write(90);
   this->right.write(90);
 }
