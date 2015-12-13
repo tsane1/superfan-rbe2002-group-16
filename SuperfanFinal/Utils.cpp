@@ -1,5 +1,4 @@
 #include "Utils.h"
-LiquidCrystal lcd3(40, 41, 42, 43, 44, 45);
 //Fan section
 Fan::Fan() {}
 
@@ -55,7 +54,7 @@ void Gyro::init() {
   Serial.println("Gyro init");
   if (!gyro.init()) // gyro init
   {
-    lcd3.print("No gyro");
+    lcd.print("No gyro");
     while (1);
   }
   gyro.enableDefault();
@@ -63,12 +62,12 @@ void Gyro::init() {
 }
 
 void Gyro::reset() {
-  for (int i = 0; i < 2000; i++) { // takes 2000 samples of the gyro
+  for (int i = 0; i < 1000; i++) { // takes 2000 samples of the gyro
     gyro.read();
     this->gerrz += gyro.g.z;
     delay(5);
   }
-  this->gerrz = (this->gerrz) / 2000;
+  this->gerrz = (this->gerrz) / 1000;
   gyro_zold = 0;
   lastReading = micros();
 }

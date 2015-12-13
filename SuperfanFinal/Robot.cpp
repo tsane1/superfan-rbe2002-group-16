@@ -11,7 +11,6 @@
  * START DATE: Dec. 8, 2015
  */
 #include "Robot.h"
-LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
 
 Robot::Robot() {
 }
@@ -42,9 +41,9 @@ driveState Robot::updateUs() {
   wallDistances[rightPin] = (analogRead(rightPin) / 2);
   wallDistances[backPin] = (analogRead(backPin) / 2);
   //this->front = this->front || wallDistances[frontPin] < 10;
-  lcd2.clear();
-  lcd2.setCursor(14, 1);
-  lcd2.print(wallDistances[rightPin]);
+  lcd.clear();
+  lcd.setCursor(14, 1);
+  lcd.print(wallDistances[rightPin]);
   if (wallDistances[rightPin] > 20) return TURN_RIGHT;
   else if (wallDistances[frontPin] < 8) {
     if (front) {
@@ -70,7 +69,7 @@ void Robot::drive() {
   switch (this->updateUs()) {
     case KEEP_GOING: this->left.write(65); this->right.write(115); break;
     case TURN_LEFT: this->turn(leftTurn); dir = turnLeft(dir); break; // left
-    case TURN_RIGHT: delay(150); this->turn(rightTurn); dir = turnRight(dir); break; // right
+    case TURN_RIGHT: delay(300); this->turn(rightTurn); dir = turnRight(dir); break; // right
   }
 }
 
@@ -113,20 +112,20 @@ void Robot::turn(float deg) {
   this->right.write(90);
   delay(500);
   updateDist();
-  lcd2.clear();
-  lcd2.print("Turning: ");
-  lcd2.print(deg < 0 ? "left" : "right");
+  lcd.clear();
+  lcd.print("Turning: ");
+  lcd.print(deg < 0 ? "left" : "right");
   this->pid.reset();
   this->gyro.reset();
   float gyroVal;
   do {
     gyroVal = gyro.getReading();
-    lcd2.clear();
-    lcd2.print("G");
-    lcd2.print(gyroVal);
+    lcd.clear();
+    lcd.print("G");
+    lcd.print(gyroVal);
     double control = this->pid.calc((double)(deg - gyroVal));
-    lcd2.print(" C");
-    lcd2.print(control);
+    lcd.print(" C");
+    lcd.print(control);
     this->left.write(90 - control);
     this->right.write(90 - control);
     delay(5);
@@ -136,7 +135,7 @@ void Robot::turn(float deg) {
   if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
     this->left.write(65);
     this->right.write(115);
-    delay(2000);
+    delay(2200);
   }
   this->left.write(90);
   this->right.write(90);
@@ -161,14 +160,23 @@ void Robot::sweep() {
 
 void Robot::extinguish() {
   sweep();
-  tilt.on();
-  while(analogRead(flameHeightSensorPin) < flameCutOff){
-    lcd2.print(analogRead(flameHeightSensorPin));
+  do{
+    tilt.on();
+    lcd.print(analogRead(flameHeightSensorPin));
+    delay(2500);
+    tilt.off();
+    lcd.clear();
     delay(500);
-    lcd2.clear();
   }
-  lcd2.print("FIRE'S OUT!");
+  while(analogRead(flameHeightSensorPin) < flameCutOff);
+
+  lcd.print("FIRE'S OUT!");
   tilt.off();
+  delay(100);
+  lcd.clear();
+  updateUs();
+  lcd.print(getZ(wallDistances[frontPin]));
+  while(true);//stop doing things.
 }
 
 void Robot::resetEnc() {
@@ -192,9 +200,9 @@ double Robot::updateEnc() {
 /* this is the sum of distance from base of candle to flame
  * and from front ultrasonic sensor to pivot point of fan mount
  * in the x direction
- * ultra to pivot is 1.5 candle is 2.4 on average
+ * ultra to pivot is 2.5 candle is 2.0 
  */
-#define offsetX 3.9/* TODO: Fix this value*/
+#define offsetX 4.5
 /* this is the offset from the floor to the pivot point
  *  of the fan mount
  */
@@ -202,7 +210,7 @@ double Robot::updateEnc() {
 #define initAngle 90.0
 #define degreesPerStep 1.8
 //distance from piv to sensor in straight line
-#define pivToSns 3.5 /*TODOD fill in real value*/
+#define pivToSns 3 
 /* converts from degrees to radians*/
 #define degToRad(deg) (deg*PI/180)
 #define stepsToDeg(steps) (degreesPerStep*steps)
@@ -216,7 +224,7 @@ float Robot::getZ(byte dX) {
   float snsX = offsetX + dX + //distance between pivot and flame
                //plus the distance between flame sensor and pivot in x direction
                //gives distance in x between candle and sensor
-               ((pivToSns) / sin(degToRad(90.0 - stepsToDeg(tilt.numSteps))));
+               ((pivToSns) / sin(degToRad(theta)));
   float yFromPivotToFlame = sin(degToRad(90 - theta)) *
                             ((snsX) / sin(degToRad(theta))); //from law of sines
   return offsetY + yFromPivotToFlame;

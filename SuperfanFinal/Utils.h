@@ -6,6 +6,7 @@
 #define tiltDirPin 7 //stepper motor direction
 #define tiltStepPin 8 //stepper motor step pin
 #define stepperEnablePin 6
+extern LiquidCrystal lcd;
 /**
  * Class to control the stepper motor
  */
