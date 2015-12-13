@@ -17,13 +17,13 @@ PidController::PidController()
 	this->kp = 1;
 	this->kd = 0;
 	this->ki = 0;
-	this->setLimits(-1023, 1023);//default values
+	this->setLimits(-90, 90);//default values
 	this->setSampleTime(DEFAULT_SAMPLE_TIME);
 	this->reset();
 }
 
 PidController::PidController(double Kp, double Ki, double Kd)
-{//TODO: check the limits
+{
 	this->setConstants(Kp, Ki, Kd);
 	this->reset();
 }
@@ -66,7 +66,7 @@ void PidController::reset()
 }
 
 void PidController::setLimits(double min, double max)
-{//TODO: check values
+{
 	min_output = min;
 	max_output = max;
 }
@@ -79,6 +79,6 @@ void PidController::setConstants(double Kp, double Ki, double Kd)
 }
 
 void PidController::setSampleTime(int stime)//in ms
-{//TODO: check stime is in a valid range
+{
 	this->sample_time = stime;
 }

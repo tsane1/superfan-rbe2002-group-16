@@ -17,6 +17,7 @@
 #include <I2CEncoder.h>
 #include <LiquidCrystal.h>
 #include "Robot.h"
+#include "Utils.h"
 
 #define PULSE_TRIGGER 11
 #define start 29

@@ -12,120 +12,7 @@
  */
  #include "Robot.h"
  LiquidCrystal lcd2(40, 41, 42, 43, 44, 45);
- direction turnRight(direction dir){
-  switch(dir){
-    case pX: dir = mY; break;
-    case mY: dir = mX; break;
-    case mX: dir = pY; break;
-    case pY: dir = pX; break; 
-  }
-  return dir;
-}
- direction turnLeft(direction dir){
-  switch(dir){
-    case pX: dir = pY; break;
-    case mY: dir = pX; break;
-    case mX: dir = mY; break;
-    case pY: dir = mX; break; 
-  }
-  return dir;
-}
-/* this is the sum of distance from base of candle to flame
- * and from front ultrasonic sensor to pivot point of fan mount 
- * in the x direction
- * ultra to pivot is 1.5 candle is 2.4 on average
- */
-#define offsetX 3.9
-/* this is the offset from the floor to the pivot point 
- *  of the fan mount
- */
-#define offsetY 9
-/* converts from degrees to radians
- */
- #define initAngle 90.0
- #define degreesPerStep 1.8
- //distance from piv to sensor in straight line
- #define pivToSns 3.5 /*TODOD fill in real value*/
- #define degToRad(deg) (deg*PI/180)
- #define stepsToDeg(steps) (degreesPerStep*steps)
-/*Gets the height of the flame based on distance
-* from robot of fan mount to the base of the candle
-* for derivation of this formula see attached file
-* @param dX the displacement from ultrasonic sensor to candle base
-*/
-float Robot::getZ(byte dX){
-  float theta = initAngle - stepsToDeg((float)tilt.numSteps);
-  float snsX = offsetX + dX + //distance between pivot and flame
-  //plus the distance between flame sensor and pivot in x direction
-  //gives distance in x between candle and sensor
-  ((pivToSns)/sin(degToRad(90.0-stepsToDeg(tilt.numSteps))));
-  float yFromPivotToFlame = sin(degToRad(90-theta))*
-  ((snsX)/sin(degToRad(theta)));//from law of sines
-  return offsetY + yFromPivotToFlame;
-  //total is offset from ground to pivot + y from pivot to flame
-}
-Tilter::Tilter(){
 
-}
-void Tilter::init(){
-  pinMode(tiltDirPin, OUTPUT);
-  pinMode(tiltStepPin, OUTPUT);
-  digitalWrite(tiltDirPin, LOW);
-  digitalWrite(tiltStepPin, LOW);
-}
-void Tilter::step(bool dir){
-  digitalWrite(tiltDirPin, dir ? HIGH : LOW);
-  digitalWrite(tiltStepPin, HIGH);
-  delay(10);
-  digitalWrite(tiltStepPin, LOW);
-  delay(10);
-  numSteps+= dir? 1: -1;
-}
-void Tilter::goTo(int stepNum){
-  while(stepNum>numSteps){//goal is higher than current
-    step(up);
-  }
-  while(stepNum<numSteps){//goal is lower than current
-    step(down);
-  }
-}
-Gyro::Gyro(){
-}
-void Gyro::init(){
-  Serial.println("Gyro init");
-  if (!gyro.init()) // gyro init
-  {
-    lcd2.print("No gyro");
-    while (1); 
-  }
-  gyro.enableDefault();
-  //reset();
-  Serial.println("Done");
-}
-void Gyro::reset(){
-  for(int i =0;i<2000;i++){  // takes 2000 samples of the gyro
-    gyro.read();
-    this->gerrz += gyro.g.z;
-    delay(5);
-  } 
-  this->gerrz = (this->gerrz)/2000;
-  gyro_zold = 0;
-  lastReading = micros();
-}
-
-float Gyro::getReading(){
-  this->gyro.read();
-  long deltaReading = micros()-lastReading;
-  lastReading = micros();
-  this->gyro_z = (float)(this->gyro.g.z - this->gerrz) * this->G_gain * ((float)(deltaReading)/1000000);//time delay since last reading in seconds
-  this->gyro_z += this->gyro_zold;
-  this->gyro_zold = this->gyro_z;
-  return (gyro_z );
-}
-
-void Gyro::resetHeading(){
-  gyro_zold = 0;
-}
 Robot::Robot(){
 }
 void Robot::init(){  
@@ -141,11 +28,6 @@ void Robot::init(){
   gotFire = false;
   this->pid.setConstants(0.6, 0.005, 0.7);
   this->pid.setLimits(-30,30);
-}
-
-void Robot::goFwd(){
-  left.write(80);
-  right.write(100);
 }
 driveState Robot::updateUs(){
   /*Sensors return vcc/512 V per inch with max of 254 inches
@@ -257,21 +139,7 @@ void Robot::turn(float deg){
   this->left.write(90);
   this->right.write(90);
 }
-void Robot::resetEnc(){
-  lEnc.zero();
-  rEnc.zero();
-}
-void Robot::updateDist(){
-  switch(dir){
-    case pX: x+= updateEnc(); break;
-    case pY: y+= updateEnc(); break;
-    case mX: x-=updateEnc(); break;
-    case mY: y-=updateEnc(); break;
-  }
-}
-double Robot::updateEnc(){
-  return (lEnc.getPosition()+rEnc.getPosition())/2;//average distance turned
-}
+
 void Robot::sweep(){
   tilt.goTo(-25);
   int minValue = 10000;
@@ -299,6 +167,54 @@ void Robot::sweep(){
 }
 void Robot::extinguish(){
 sweep();
-while(true);
 }
+void Robot::resetEnc(){
+  lEnc.zero();
+  rEnc.zero();
+}
+void Robot::updateDist(){
+  switch(dir){
+    case pX: x+= updateEnc(); break;
+    case pY: y+= updateEnc(); break;
+    case mX: x-=updateEnc(); break;
+    case mY: y-=updateEnc(); break;
+  }
+}
+double Robot::updateEnc(){
+  return (lEnc.getPosition()+rEnc.getPosition())/2;//average distance turned
+}
+/* this is the sum of distance from base of candle to flame
+ * and from front ultrasonic sensor to pivot point of fan mount 
+ * in the x direction
+ * ultra to pivot is 1.5 candle is 2.4 on average
+ */
+#define offsetX 3.9/* TODO: Fix this value*/
+/* this is the offset from the floor to the pivot point 
+ *  of the fan mount
+ */
+#define offsetY 9
+#define initAngle 90.0
+#define degreesPerStep 1.8
+//distance from piv to sensor in straight line
+#define pivToSns 3.5 /*TODOD fill in real value*/
+/* converts from degrees to radians*/
+#define degToRad(deg) (deg*PI/180)
+#define stepsToDeg(steps) (degreesPerStep*steps)
+/**Gets the height of the flame based on distance
+* from robot of fan mount to the base of the candle
+* for derivation of this formula see attached file
+* @param dX the displacement from ultrasonic sensor to candle base
+*/
+float Robot::getZ(byte dX){
+  float theta = initAngle - stepsToDeg((float)tilt.numSteps);
+  float snsX = offsetX + dX + //distance between pivot and flame
+  //plus the distance between flame sensor and pivot in x direction
+  //gives distance in x between candle and sensor
+  ((pivToSns)/sin(degToRad(90.0-stepsToDeg(tilt.numSteps))));
+  float yFromPivotToFlame = sin(degToRad(90-theta))*
+  ((snsX)/sin(degToRad(theta)));//from law of sines
+  return offsetY + yFromPivotToFlame;
+  //total is offset from ground to pivot + y from pivot to flame
+}
+
 
