@@ -32,29 +32,66 @@ class Robot {
   public:
     int wallDistances[4];
     Robot();//implemented
-
+    /**
+     * Performs initialization on the robot
+     */
     void init();
+    /**
+     * Calculates the motion the robot needs to perform and performs it
+     * Call repeatedly in loop
+     */
     void drive();
-    void extinguish();// goes to 8 inches away from fire and extinguishes (must be facing fire already)
+    /**
+     * Goes to under 8 inches away from the fire and extinguishes the fire
+     * Only call if already facing the fire.
+     */
+    void extinguish();
+    /**
+     * Turns the given number of degrees 
+     * @param deg the number of degrees to turn - is left + is right
+     */
     void turn(float deg);
-    void sweep();//sweeps the stepper to find the fire.
+    /**
+     * Sweeps the stepper to find the fire
+     */
+    void sweep();
 
   private:
-    driveState updateUs();//implemented
-    boolean gotFire;
+    /**
+    * Updates the ultrasonic sensors and returns the action which the robot should perform.
+    */
+    driveState updateUs();
+    /**
+     * Gets the z height of the fire
+     * @param dX the distance in inches from the ultrasonic sensor to the flame base.
+     */
+    float getZ(byte dX);
+    /**
+     * Updates the distances X and Y based on encoder values and current direction
+     */
+    void updateDist();
+    /**
+     * Calculates the distance travelled using the average of the two encoder readings
+     */
+    double updateEnc();
+    /**
+     * Resets the encoders to zero
+     */
+    void resetEnc();
+    /**
+     * Once the flame has been spotted, determines the proper location to turn so that the flame will be facing the front of the robot.
+     */
     void alignToFlame();
+    boolean gotFire;
     PidController pid;
     Servo left, right;
     Gyro gyro;
-    Tilter tilt;
+    Fan tilt;
     I2CEncoder lEnc, rEnc;
     direction dir = pX;
     boolean front;
     double x,y;
-    float getZ(byte dX);//implemented
-    void updateDist();
-    double updateEnc();
-    void resetEnc();
+
 };
 
 

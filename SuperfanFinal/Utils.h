@@ -8,9 +8,9 @@
 /**
  * Class to control the stepper motor
  */
-class Tilter {
+class Fan {
   public:
-    Tilter();
+    Fan();
     /**
      * Initializes the pins to proper states
      */
@@ -29,13 +29,15 @@ class Tilter {
      * @param stepNum the step to go to. (the initial position on robot start is 0)
      */
     void goTo(int stepNum);
+    void on();
+    void off();
 };
 /**
  * Gyro class
  */
 class Gyro {
   public:
-    Gyro(); // default constructor
+    Gyro();
     /**
      * Initializes the gyro and sets to default settings
      */
@@ -62,6 +64,12 @@ enum direction {
   mX,
   pY
 };
+/**
+ * Turns a given direction to the right.
+ */
 direction turnRight(direction dir);
+/**
+ * Turns a given direction to the left
+ */
 direction turnLeft(direction dir);
 

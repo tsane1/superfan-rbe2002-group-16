@@ -26,24 +26,15 @@ LiquidCrystal lcd(40, 41, 42, 43, 44, 45);
 Robot superfan;
 
 void setup() {
-  Serial.begin(9600);
   lcd.begin(16 , 2);
-  
-  Serial.println("ON");
-  
   Wire.begin();
   superfan.init();
-  
   lcd.print("Initiated");
   delay(500);
-  
   pinMode(start, INPUT_PULLUP);
-  
   lcd.clear();
   lcd.print("Wait on Button");
-  
   while (digitalRead(start) == HIGH); //don't go until start is pressed
-  
   lcd.clear();
   lcd.print("Firefighting!");
   pinMode(PULSE_TRIGGER, OUTPUT);
@@ -54,12 +45,7 @@ void setup() {
   superfan.sweep();
 }
 
-long timer = 0;
-long lastTime = 0;
-long elapsedTime;
-int mode = 1;
-
 void loop() {
   //superfan.drive();
-  
+
 }

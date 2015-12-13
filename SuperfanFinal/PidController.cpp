@@ -1,12 +1,12 @@
 /**  PidController - Library for using PID control to set motor positions
  *  This file contains implementation of PidController objects.
- *  
+ *
  *  Downloaded Oct. 10, 2015, from awtreth/RBE2001-Group16
  *  @author Mateus Amarante Araujo
  *  @author Dominic Cupo
  *  @author Tanuj Sane
  */
- 
+
 #include "PidController.h"
 #include "Arduino.h"
 
@@ -14,18 +14,18 @@
 
 PidController::PidController()
 {
-	this->kp = 1;
-	this->kd = 0;
-	this->ki = 0;
-	this->setLimits(-90, 90);//default values
-	this->setSampleTime(DEFAULT_SAMPLE_TIME);
-	this->reset();
+  this->kp = 1;
+  this->kd = 0;
+  this->ki = 0;
+  this->setLimits(-90, 90);//default values
+  this->setSampleTime(DEFAULT_SAMPLE_TIME);
+  this->reset();
 }
 
 PidController::PidController(double Kp, double Ki, double Kd)
 {
-	this->setConstants(Kp, Ki, Kd);
-	this->reset();
+  this->setConstants(Kp, Ki, Kd);
+  this->reset();
 }
 
 double PidController::calc(double error)
@@ -35,50 +35,50 @@ double PidController::calc(double error)
 
 double PidController::calc(double target, double sensor_value)
 {
-	now = millis();
-	dt = now - last_time;
-	
-	if(dt >= sample_time)
-	{
-		error = target - sensor_value;
-		sum += error;
-		
-		
-		double output = kp*error + kd*(error-last_error)/dt + ki*sum*dt;
-		
-		output = constrain(output, min_output, max_output);
-		
-		last_output = output;
-		
-		last_error = error;
-		last_time = now;
+  now = millis();
+  dt = now - last_time;
+
+  if (dt >= sample_time)
+  {
+    error = target - sensor_value;
+    sum += error;
+
+
+    double output = kp * error + kd * (error - last_error) / dt + ki * sum * dt;
+
+    output = constrain(output, min_output, max_output);
+
+    last_output = output;
+
+    last_error = error;
+    last_time = now;
     return output;
-	}
-	else return last_output;
+  }
+  else return last_output;
 }
-  
+
 void PidController::reset()
 {
-	last_error = 0;
-	last_time = millis();
-	sum = 0;
-	last_output = 0;
+  last_error = 0;
+  last_time = millis();
+  sum = 0;
+  last_output = 0;
 }
 
 void PidController::setLimits(double min, double max)
 {
-	min_output = min;
-	max_output = max;
+  min_output = min;
+  max_output = max;
 }
 
 void PidController::setConstants(double Kp, double Ki, double Kd)
 {
-	this->kp = Kp;
-	this->ki = Ki;
-	this->kd = Kd;
+  this->kp = Kp;
+  this->ki = Ki;
+  this->kd = Kd;
 }
 
 void PidController::setSampleTime(int stime)//in ms
 {
-	this->sample_time = stime;
+  this->sample_time = stime;
 }
