@@ -5,6 +5,7 @@
 #define fanPin 10 //digital
 #define tiltDirPin 7 //stepper motor direction
 #define tiltStepPin 8 //stepper motor step pin
+#define stepperEnablePin 6
 /**
  * Class to control the stepper motor
  */
@@ -31,6 +32,8 @@ class Fan {
     void goTo(int stepNum);
     void on();
     void off();
+    void enable();
+    void disable();
 };
 /**
  * Gyro class

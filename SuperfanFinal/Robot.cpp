@@ -143,33 +143,32 @@ void Robot::turn(float deg) {
 }
 
 void Robot::sweep() {
+  tilt.enable();
   tilt.goTo(-25);
   int minValue = 10000;
   int minStep = -75;
   while (tilt.numSteps < 30) {
     int temp = analogRead(flameHeightSensorPin);
-    lcd2.clear();
-    lcd2.print("R");
-    lcd2.print(temp);
-    lcd2.print("S");
-    lcd2.print(tilt.numSteps);
     if (temp < minValue) {
       minValue = temp;
       minStep = tilt.numSteps;
     }
-    delay(500);
     tilt.step(tilt.up);
   }
   tilt.goTo(minStep);
-  lcd2.clear();
-  lcd2.print("R");
-  lcd2.print(analogRead(flameHeightSensorPin));
-  lcd2.print("S");
-  lcd2.print(tilt.numSteps);
+  tilt.disable();
 }
 
 void Robot::extinguish() {
   sweep();
+  tilt.on();
+  while(analogRead(flameHeightSensorPin) < flameCutOff){
+    lcd2.print(analogRead(flameHeightSensorPin));
+    delay(500);
+    lcd2.clear();
+  }
+  lcd2.print("FIRE'S OUT!");
+  tilt.off();
 }
 
 void Robot::resetEnc() {

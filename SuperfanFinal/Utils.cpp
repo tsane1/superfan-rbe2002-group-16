@@ -6,8 +6,10 @@ Fan::Fan() {}
 void Fan::init() {
   pinMode(tiltDirPin, OUTPUT);
   pinMode(tiltStepPin, OUTPUT);
+  pinMode(stepperEnablePin, OUTPUT);
   digitalWrite(tiltDirPin, LOW);
   digitalWrite(tiltStepPin, LOW);
+  digitalWrite(stepperEnablePin, HIGH);
   pinMode(fanPin, OUTPUT);
   digitalWrite(fanPin, LOW);
 }
@@ -36,6 +38,14 @@ void Fan::on() {
 
 void Fan::off() {
   digitalWrite(fanPin, LOW);
+}
+
+void Fan::enable(){
+  digitalWrite(stepperEnablePin, LOW);
+}
+
+void Fan::disable(){
+  digitalWrite(stepperEnablePin, HIGH);
 }
 
 //Gyro section

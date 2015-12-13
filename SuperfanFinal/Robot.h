@@ -48,14 +48,14 @@ class Robot {
     void extinguish();
     /**
      * Turns the given number of degrees 
-     * @param deg the number of degrees to turn - is left + is right
+     * @param deg the number of degrees to turn (- is left + is right)
      */
     void turn(float deg);
     /**
      * Sweeps the stepper to find the fire
      */
     void sweep();
-
+    Fan tilt;
   private:
     /**
     * Updates the ultrasonic sensors and returns the action which the robot should perform.
@@ -86,11 +86,11 @@ class Robot {
     PidController pid;
     Servo left, right;
     Gyro gyro;
-    Fan tilt;
+    
     I2CEncoder lEnc, rEnc;
-    direction dir = pX;
+    direction dir = pX; // init to front facing, defined as positive x
     boolean front;
-    double x,y;
+    double x,y; // location storage variables
 
 };
 
