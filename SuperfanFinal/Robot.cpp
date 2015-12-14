@@ -62,14 +62,14 @@ void Robot::drive() {
   if (analogRead(sideFlameSensorPin) < flameCutOff) {
     alignToFlame();
     turn(leftTurn);
-    dir = turnLeft(dir);
+    --dir;
     extinguish();
   }
 
   switch (this->updateUs()) {
     case KEEP_GOING: this->left.write(65); this->right.write(115); break;
-    case TURN_LEFT: this->turn(leftTurn); dir = turnLeft(dir); break; // left
-    case TURN_RIGHT: delay(300); this->turn(rightTurn); dir = turnRight(dir); break; // right
+    case TURN_LEFT: this->turn(leftTurn); --dir; break; // left
+    case TURN_RIGHT: delay(300); this->turn(rightTurn); ++dir; break; // right
   }
 }
 

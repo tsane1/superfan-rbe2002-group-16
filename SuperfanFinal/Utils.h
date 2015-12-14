@@ -68,12 +68,21 @@ enum direction {
   mX,
   pY
 };
-/**
- * Turns a given direction to the right.
- */
-direction turnRight(direction dir);
-/**
- * Turns a given direction to the left
- */
-direction turnLeft(direction dir);
-
+inline direction& operator++(direction &dir){
+  switch(dir){
+    case pX: dir = mY; break;
+    case mY: dir = mX; break;
+    case mX: dir = pY; break;
+    case pY: dir = pX; break;
+  }
+  return dir;
+}
+inline direction& operator--(direction &dir){
+    switch(dir){
+    case pX: dir = pY; break;
+    case mY: dir = pX; break;
+    case mX: dir = mY; break;
+    case pY: dir = mX; break;
+  }
+  return dir;
+}
