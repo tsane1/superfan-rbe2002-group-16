@@ -98,7 +98,7 @@ void Robot::alignToFlame() { //TODO: implement
     index++;
     left.write(70);
     right.write(110);
-    while (updateEnc() < 0.5 * index);
+    while (updateEnc() < 0.5 * index -0.5);
     left.write(90);
     right.write(90);
   }
