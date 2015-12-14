@@ -3,7 +3,7 @@
 Fan::Fan() {}
 
 void Fan::init() {
-  pinMode(tiltDirPin, OUTPUT);
+  pinMode(tiltDirPin, OUTPUT); //sets the pin mode
   pinMode(tiltStepPin, OUTPUT);
   pinMode(stepperEnablePin, OUTPUT);
   digitalWrite(tiltDirPin, LOW);

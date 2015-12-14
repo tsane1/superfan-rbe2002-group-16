@@ -15,19 +15,19 @@
 Robot::Robot() {
 }
 
-void Robot::init() {
-  x = 0;
-  y = 0;
-  left.attach(leftServoPin, 1000, 2000);
+void Robot::init() { //this is called to initialize all the variables needed for the robot
+  x = 0; //the X pos relative to start
+  y = 0; //the Y pos relative to start
+  left.attach(leftServoPin, 1000, 2000); //attaches the motor to the correct pin, with additional info for the 393 motor use
   right.attach(rightServoPin, 1000, 2000);
-  lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
+  lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA); //initializes the encoders built into the motors with the correct motor type and wheel size constant
   rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
-  lEnc.setReversed(true);
-  gyro.init();
-  tilt.init();
-  gotFire = false;
-  this->pid.setConstants(0.6, 0.005, 0.7);
-  this->pid.setLimits(-30, 30);
+  lEnc.setReversed(true); //sets the left encoder to be reversed so that it counts positive when the robot drives forward
+  gyro.init(); //initilizes the gyro
+  tilt.init(); //initilizes the stepper motor object
+  gotFire = false; //sets initial condition for if fire is found
+  this->pid.setConstants(0.6, 0.005, 0.7); //sets predetermined conditions for the pid object
+  this->pid.setLimits(-30, 30); //sets max speed limits. -30 and 30 allow medium speed, giving us greater accuracy
 }
 
 driveState Robot::updateUs() {
@@ -43,10 +43,10 @@ driveState Robot::updateUs() {
   //this->front = this->front || wallDistances[frontPin] < 10;
   lcd.clear();
   lcd.setCursor(14, 1);
-  lcd.print(wallDistances[rightPin]);
-  if (wallDistances[rightPin] > 20) return TURN_RIGHT;
-  else if (wallDistances[frontPin] < 8) {
-    if (front) {
+  lcd.print(wallDistances[rightPin]); //lets us know the distance to the right wall (which we are following)
+  if (wallDistances[rightPin] > 20) return TURN_RIGHT; //if we've lost the wall, execute the turn to the right
+  else if (wallDistances[frontPin] < 8) { //otherwise, if were about to run into a wall, turn to the left
+    if (front) { 
       front = false;
       return TURN_LEFT;
     }
@@ -59,37 +59,37 @@ driveState Robot::updateUs() {
 }
 
 void Robot::drive() {
-  if (analogRead(sideFlameSensorPin) < flameCutOff) {
-    alignToFlame();
+  if (analogRead(sideFlameSensorPin) < flameCutOff) { //if we've found the candle to the left of us
+    alignToFlame(); //turn to face the candle directly
     turn(leftTurn);
-    --dir;
-    extinguish();
+    --dir; //set correct direction
+    extinguish(); //run extinguish function
   }
 
   switch (this->updateUs()) {
-    case KEEP_GOING: this->left.write(65); this->right.write(115); break;
+    case KEEP_GOING: this->left.write(65); this->right.write(115); break; //keep driving straight until issue found
     case TURN_LEFT: this->turn(leftTurn); --dir; break; // left
     case TURN_RIGHT: delay(300); this->turn(rightTurn); ++dir; break; // right
   }
 }
 
 void Robot::alignToFlame() { //TODO: implement
-  left.write(90);
+  left.write(90); //stop moving
   right.write(90);
-  updateDist();
-  resetEnc();
-  int minReading = flameCutOff;
+  updateDist(); //find distance to candle
+  resetEnc(); //reset the encoders
+  int minReading = flameCutOff; //set the min reading
   int minDisp = 0;
   byte index = 0;
   bool done = false;
-  while (!done) {
-    int temp = analogRead(sideFlameSensorPin);
+  while (!done) { //if it still isn't out
+    int temp = analogRead(sideFlameSensorPin); //take three readings and average them
     delay(1);
     temp += analogRead(sideFlameSensorPin);
     delay(1);
     temp += analogRead(sideFlameSensorPin);
     temp = temp / 3;
-    if (temp < minReading) {
+    if (temp < minReading) { //if a new min reading is found
       minReading = temp;
       minDisp = updateEnc();
     }
@@ -108,58 +108,62 @@ void Robot::alignToFlame() { //TODO: implement
 }
 
 void Robot::turn(float deg) {
-  this->left.write(90);
+  this->left.write(90); //stop moving
   this->right.write(90);
-  delay(500);
-  updateDist();
-  lcd.clear();
+  delay(500); //wait to settle
+  updateDist(); //update distance to go
+  lcd.clear(); //state where you're going
   lcd.print("Turning: ");
   lcd.print(deg < 0 ? "left" : "right");
-  this->pid.reset();
-  this->gyro.reset();
+  this->pid.reset();//reset pid
+  this->gyro.reset();//reset gyro readings, prevents massive error over time
   float gyroVal;
   do {
-    gyroVal = gyro.getReading();
+    gyroVal = gyro.getReading(); //get the reading of rotational pos
     lcd.clear();
     lcd.print("G");
     lcd.print(gyroVal);
-    double control = this->pid.calc((double)(deg - gyroVal));
+    double control = this->pid.calc((double)(deg - gyroVal)); //calc pid
     lcd.print(" C");
     lcd.print(control);
-    this->left.write(90 - control);
+    this->left.write(90 - control); //turn the correct way
     this->right.write(90 - control);
-    delay(5);
+    delay(5); //wait to prevent spamming
   }
-  while (abs(deg - gyroVal) > 1);
+  while (abs(deg - gyroVal) > 1); //check if you're within one degree of pos
+
+  
   resetEnc();
+
+  
   if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
     this->left.write(65);
     this->right.write(115);
-    delay(2200);
+    delay(2200); //drives a little to move
   }
   this->left.write(90);
   this->right.write(90);
 }
 
-void Robot::sweep() {
-  tilt.enable();
-  tilt.goTo(-25);
-  int minValue = 10000;
+void Robot::sweep() { //this sweeps the fan to find the height
+  tilt.enable(); //enables the stepper motor, usually disabled to prevent battery drain
+  tilt.goTo(-25); //go to -25 degrees 
+  int minValue = 10000; //values for reference
   int minStep = -75;
-  while (tilt.numSteps < 30) {
-    int temp = analogRead(flameHeightSensorPin);
-    if (temp < minValue) {
-      minValue = temp;
-      minStep = tilt.numSteps;
+  while (tilt.numSteps < 30) { //take 30 steps, rotating upward, rougly 60 degrees
+    int temp = analogRead(flameHeightSensorPin); //store the temp reading
+    if (temp < minValue) { //if heat still increasing
+      minValue = temp; //store reading for refernce in next loop
+      minStep = tilt.numSteps; //store which step it was in
     }
-    tilt.step(tilt.up);
+    tilt.step(tilt.up); //keep tilting up to check
   }
-  tilt.goTo(minStep);
-  tilt.disable();
+  tilt.goTo(minStep); //once it's all done go to the step with the most heat, right at the candle
+  tilt.disable(); //shut off the stepper so no drain to battery
 }
 
 void Robot::extinguish() {
-  sweep();
+  sweep(); //finds the candle
   do{
     tilt.on();
     lcd.print(analogRead(flameHeightSensorPin));
@@ -176,7 +180,11 @@ void Robot::extinguish() {
   lcd.clear();
   updateUs();
   lcd.print(getZ(wallDistances[frontPin]));
-  while(true);//stop doing things.
+ 
+ /********************************/
+ while(true);//stop doing things.
+ /********************************/
+
 }
 
 void Robot::resetEnc() {
@@ -185,7 +193,7 @@ void Robot::resetEnc() {
 }
 
 void Robot::updateDist() {
-  switch (dir) {
+  switch (dir) { //depending on what direction were looking at, add or decrease pos
     case pX: x += updateEnc(); break;
     case pY: y += updateEnc(); break;
     case mX: x -= updateEnc(); break;
