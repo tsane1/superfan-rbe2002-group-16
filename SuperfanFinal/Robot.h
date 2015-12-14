@@ -56,6 +56,8 @@ class Robot {
      */
     void sweep();
     Fan tilt;
+    Servo left, right;
+    I2CEncoder lEnc, rEnc;
   private:
     /**
     * Updates the ultrasonic sensors and returns the action which the robot should perform.
@@ -84,10 +86,10 @@ class Robot {
     void alignToFlame();
     boolean gotFire;
     PidController pid;
-    Servo left, right;
+    
     Gyro gyro;
     
-    I2CEncoder lEnc, rEnc;
+    
     direction dir = pX; // init to front facing, defined as positive x
     boolean front;
     double x,y; // location storage variables

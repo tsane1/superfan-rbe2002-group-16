@@ -73,7 +73,7 @@ void Robot::drive() {
   }
 }
 
-void Robot::alignToFlame() { //TODO: implement
+void Robot::alignToFlame() {
   left.write(90); //stop moving
   right.write(90);
   updateDist(); //find distance to candle
@@ -131,10 +131,8 @@ void Robot::turn(float deg) {
     delay(5); //wait to prevent spamming
   }
   while (abs(deg - gyroVal) > 1); //check if you're within one degree of pos
-
-  
+ 
   resetEnc();
-
   
   if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
     this->left.write(65);
@@ -163,7 +161,18 @@ void Robot::sweep() { //this sweeps the fan to find the height
 }
 
 void Robot::extinguish() {
-  sweep(); //finds the candle
+  resetEnc();
+  lcd.clear();
+  while(updateEnc() < 12. && wallDistances[frontPin] > 8){
+    left.write(65);
+    right.write(115);
+    lcd.print(updateEnc());
+    this->updateUs();
+  }
+  left.write(90);
+  right.write(90);
+  updateDist();
+  sweep();
   do{
     tilt.on();
     lcd.print(analogRead(flameHeightSensorPin));
