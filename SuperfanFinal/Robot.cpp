@@ -45,7 +45,7 @@ driveState Robot::updateUs() {
   lcd.setCursor(14, 1);
   lcd.print(wallDistances[rightPin]); //lets us know the distance to the right wall (which we are following)
   if (wallDistances[rightPin] > 20) return TURN_RIGHT; //if we've lost the wall, execute the turn to the right
-  else if (wallDistances[frontPin] < 8) { //otherwise, if were about to run into a wall, turn to the left
+  else if (wallDistances[frontPin] < 12) { //otherwise, if were about to run into a wall, turn to the left
     if (front) { 
       front = false;
       return TURN_LEFT;
@@ -67,9 +67,9 @@ void Robot::drive() {
   }
 
   switch (this->updateUs()) {
-    case KEEP_GOING: this->left.write(65); this->right.write(115); break; //keep driving straight until issue found
+    case KEEP_GOING: this->left.write(62); this->right.write(115); break; //keep driving straight until issue found
     case TURN_LEFT: this->turn(leftTurn); --dir; break; // left
-    case TURN_RIGHT: delay(300); this->turn(rightTurn); ++dir; break; // right
+    case TURN_RIGHT: this->turn(rightTurn); ++dir; break; // right
   }
 }
 
@@ -82,7 +82,7 @@ void Robot::alignToFlame() {
   int minDisp = 0;
   byte index = 0;
   bool done = false;
-  while (!done) { //if it still isn't out
+  while (!done) { //if it still isn't passed
     int temp = analogRead(sideFlameSensorPin); //take three readings and average them
     delay(1);
     temp += analogRead(sideFlameSensorPin);
@@ -98,7 +98,7 @@ void Robot::alignToFlame() {
     index++;
     left.write(70);
     right.write(110);
-    while (updateEnc() < 0.5 * index -0.5);
+    while (updateEnc() < 0.5 * index - 0.5);
     left.write(90);
     right.write(90);
   }
@@ -135,9 +135,9 @@ void Robot::turn(float deg) {
   resetEnc();
   
   if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
-    this->left.write(65);
+    this->left.write(62);
     this->right.write(115);
-    delay(2200); //drives a little to move
+    delay(2500); //drives a little to move
   }
   this->left.write(90);
   this->right.write(90);
@@ -164,7 +164,7 @@ void Robot::extinguish() {
   resetEnc();
   lcd.clear();
   while(updateEnc() < 12. && wallDistances[frontPin] > 8){
-    left.write(65);
+    left.write(62);
     right.write(115);
     lcd.print(updateEnc());
     this->updateUs();
@@ -185,7 +185,7 @@ void Robot::extinguish() {
 
   lcd.print("FIRE'S OUT!");
   tilt.off();
-  delay(100);
+  delay(1000);
   lcd.clear();
   updateUs();
   lcd.print(getZ(wallDistances[frontPin]));
