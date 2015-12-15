@@ -8,13 +8,13 @@ void Fan::init() {
   pinMode(stepperEnablePin, OUTPUT);
   digitalWrite(tiltDirPin, LOW);
   digitalWrite(tiltStepPin, LOW);
-  digitalWrite(stepperEnablePin, HIGH);
+  enable();
   pinMode(fanPin, OUTPUT);
   digitalWrite(fanPin, LOW);
 }
 
 void Fan::step(bool dir) {
-  digitalWrite(tiltDirPin, dir ? HIGH : LOW);
+  digitalWrite(tiltDirPin, dir ? LOW : HIGH);
   digitalWrite(tiltStepPin, HIGH);
   delay(10);
   digitalWrite(tiltStepPin, LOW);

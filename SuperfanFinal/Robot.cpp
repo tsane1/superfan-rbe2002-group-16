@@ -44,8 +44,15 @@ driveState Robot::updateUs() {
   lcd.clear();
   lcd.setCursor(14, 1);
   lcd.print(wallDistances[rightPin]); //lets us know the distance to the right wall (which we are following)
-  if (wallDistances[rightPin] > 20) return TURN_RIGHT; //if we've lost the wall, execute the turn to the right
-  else if (wallDistances[frontPin] < 8) { //otherwise, if were about to run into a wall, turn to the left
+  if (wallDistances[rightPin] > 20){//no right wall
+    badRightCount++;
+    if(badRightMax<badRightCount){//makes sure there have been badRightMax no wall readings in a row
+      badRightCount = 0;
+      return TURN_RIGHT; //if we've lost the wall, execute the turn to the right 
+    }
+  }
+  else badRightCount = 0;//if we see a right wall its 0
+  if (wallDistances[frontPin] < 8) { //otherwise, if were about to run into a wall, turn to the left
     if (front) { 
       front = false;
       return TURN_LEFT;
@@ -65,11 +72,30 @@ void Robot::drive() {
     --dir; //set correct direction
     extinguish(); //run extinguish function
   }
-
+  byte lastRight = wallDistances[rightPin];
   switch (this->updateUs()) {
-    case KEEP_GOING: this->left.write(65); this->right.write(115); break; //keep driving straight until issue found
-    case TURN_LEFT: this->turn(leftTurn); --dir; break; // left
-    case TURN_RIGHT: delay(300); this->turn(rightTurn); ++dir; break; // right
+    case KEEP_GOING: 
+    this->left.write(90-lFast); this->right.write(90+rFast); 
+    break; //keep driving straight until issue found
+    case TURN_LEFT: 
+      left.write(90+lSlow);
+      right.write(90-rSlow);
+    do{
+      updateUs();
+    }
+    while(wallDistances[frontPin]<10);//back up to 12 inches from the wall
+    this->turn(leftTurn); --dir; break; // left
+    case TURN_RIGHT: 
+    delay(100); 
+    this->turn(rightTurn); ++dir; 
+    this->left.write(90-lFast);//reestablish wall contact
+    this->right.write(90+rFast);
+    do{
+      //drives a little to move
+    }
+    while(wallDistances[frontPin]>8 &&updateEnc()<20);//forwards 20 inches or until front wall in the way
+    badRightCount = 0;
+    break; // right
   }
 }
 
@@ -96,14 +122,14 @@ void Robot::alignToFlame() {
     if (temp > flameCutOff)
       done = true;//you have gone past the candle
     index++;
-    left.write(70);
-    right.write(110);
+    left.write(90-lSlow);
+    right.write(90+rSlow);
     while (updateEnc() < 0.5 * index -0.5);
     left.write(90);
     right.write(90);
   }
-  left.write(110);
-  right.write(70);
+  left.write(90+lSlow);
+  right.write(90-rSlow);
   while (updateEnc() > minDisp);
 }
 
@@ -131,14 +157,7 @@ void Robot::turn(float deg) {
     delay(5); //wait to prevent spamming
   }
   while (abs(deg - gyroVal) > 1); //check if you're within one degree of pos
- 
   resetEnc();
-  
-  if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
-    this->left.write(65);
-    this->right.write(115);
-    delay(2200); //drives a little to move
-  }
   this->left.write(90);
   this->right.write(90);
 }
@@ -163,9 +182,10 @@ void Robot::sweep() { //this sweeps the fan to find the height
 void Robot::extinguish() {
   resetEnc();
   lcd.clear();
-  while(updateEnc() < 12. && wallDistances[frontPin] > 8){
-    left.write(65);
-    right.write(115);
+  updateUs();
+  while(updateEnc() < 18 && wallDistances[frontPin] > 6){
+    left.write(90 - lSlow);
+    right.write(90 + rSlow);
     lcd.print(updateEnc());
     this->updateUs();
   }
@@ -176,10 +196,10 @@ void Robot::extinguish() {
   do{
     tilt.on();
     lcd.print(analogRead(flameHeightSensorPin));
-    delay(2500);
+    delay(5000);
     tilt.off();
     lcd.clear();
-    delay(500);
+    delay(1000);
   }
   while(analogRead(flameHeightSensorPin) < flameCutOff);
 
@@ -188,6 +208,13 @@ void Robot::extinguish() {
   delay(100);
   lcd.clear();
   updateUs();
+  lcd.setCursor(0,0);
+  lcd.print("dX = ");
+  lcd.print(wallDistances[frontPin]);
+  lcd.print(" T = ");
+  lcd.print((90-stepsToDeg(tilt.numSteps)));
+  lcd.setCursor(0,1);
+  lcd.print("Z = ");
   lcd.print(getZ(wallDistances[frontPin]));
  
  /********************************/
@@ -225,12 +252,10 @@ double Robot::updateEnc() {
  */
 #define offsetY 9
 #define initAngle 90.0
-#define degreesPerStep 1.8
+
 //distance from piv to sensor in straight line
 #define pivToSns 3 
-/* converts from degrees to radians*/
-#define degToRad(deg) (deg*PI/180)
-#define stepsToDeg(steps) (degreesPerStep*steps)
+
 /**Gets the height of the flame based on distance
 * from robot of fan mount to the base of the candle
 * for derivation of this formula see attached file
@@ -241,7 +266,7 @@ float Robot::getZ(byte dX) {
   float snsX = offsetX + dX + //distance between pivot and flame
                //plus the distance between flame sensor and pivot in x direction
                //gives distance in x between candle and sensor
-               ((pivToSns) / sin(degToRad(theta)));
+               ((pivToSns) / sin(degToRad(90 - theta)));
   float yFromPivotToFlame = sin(degToRad(90 - theta)) *
                             ((snsX) / sin(degToRad(theta))); //from law of sines
   return offsetY + yFromPivotToFlame;

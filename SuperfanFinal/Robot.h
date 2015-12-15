@@ -86,7 +86,7 @@ class Robot {
     void alignToFlame();
     boolean gotFire;
     PidController pid;
-    
+    byte badRightCount = 0;//counts number of times right has been needing to turn. when more than badRightMax it will turn
     Gyro gyro;
     
     
@@ -100,7 +100,6 @@ class Robot {
 //pin defines
 #define leftServoPin 4 //servos
 #define rightServoPin 5
-
 #define frontPin 0 //analog
 #define leftPin 1
 #define rightPin 2
@@ -110,5 +109,14 @@ class Robot {
 //encoder is 1 rotation / 39.2 ticks * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.194740943877551
 #define rightTurn 83//because for some reason gyro reading of 85 degrees is 90 degrees of real life
-#define leftTurn -77.0
+#define leftTurn -81.0
 #define flameCutOff 900
+#define badRightMax 10
+#define lFast 30
+#define rFast 25
+#define lSlow 25
+#define rSlow 20
+/* converts from degrees to radians*/
+#define degToRad(deg) (deg*PI/180)
+#define degreesPerStep 1.8
+#define stepsToDeg(steps) (degreesPerStep*steps)
