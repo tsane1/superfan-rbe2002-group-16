@@ -69,7 +69,7 @@ void Robot::drive() {
   switch (this->updateUs()) {
     case KEEP_GOING: this->left.write(62); this->right.write(115); break; //keep driving straight until issue found
     case TURN_LEFT: this->turn(leftTurn); --dir; break; // left
-    case TURN_RIGHT: this->turn(rightTurn); ++dir; break; // right
+    case TURN_RIGHT: delay(300); this->turn(rightTurn); ++dir; break; // right
   }
 }
 
@@ -137,7 +137,7 @@ void Robot::turn(float deg) {
   if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
     this->left.write(62);
     this->right.write(115);
-    delay(2500); //drives a little to move
+    delay(27  00); //drives a little to move
   }
   this->left.write(90);
   this->right.write(90);
