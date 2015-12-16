@@ -8,7 +8,7 @@ void Fan::init() {
   pinMode(stepperEnablePin, OUTPUT);
   digitalWrite(tiltDirPin, LOW);
   digitalWrite(tiltStepPin, LOW);
-  enable();
+  this->disable();
   pinMode(fanPin, OUTPUT);
   digitalWrite(fanPin, LOW);
 }

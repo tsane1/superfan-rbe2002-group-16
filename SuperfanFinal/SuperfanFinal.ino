@@ -45,6 +45,5 @@ void setup() {
 }
 
 void loop() {
-  //superfan.drive();
-  superfan.extinguish();
+  superfan.drive();
 }

@@ -23,6 +23,7 @@ void Robot::init() { //this is called to initialize all the variables needed for
   lEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA); //initializes the encoders built into the motors with the correct motor type and wheel size constant
   rEnc.init(inchesPerTick, MOTOR_393_TIME_DELTA);
   lEnc.setReversed(true); //sets the left encoder to be reversed so that it counts positive when the robot drives forward
+  resetEnc();
   gyro.init(); //initilizes the gyro
   tilt.init(); //initilizes the stepper motor object
   gotFire = false; //sets initial condition for if fire is found
@@ -40,13 +41,9 @@ driveState Robot::updateUs() {
   wallDistances[leftPin] = (analogRead(leftPin) / 2);
   wallDistances[rightPin] = (analogRead(rightPin) / 2);
   wallDistances[backPin] = (analogRead(backPin) / 2);
-  //this->front = this->front || wallDistances[frontPin] < 10;
-  lcd.clear();
-  lcd.setCursor(14, 1);
-  lcd.print(wallDistances[rightPin]); //lets us know the distance to the right wall (which we are following)
   if (wallDistances[rightPin] > 20){//no right wall
     badRightCount++;
-    if(badRightMax<badRightCount){//makes sure there have been badRightMax no wall readings in a row
+    if(badRightMax < badRightCount){//makes sure there have been badRightMax no wall readings in a row
       badRightCount = 0;
       return TURN_RIGHT; //if we've lost the wall, execute the turn to the right 
     }
@@ -75,33 +72,33 @@ void Robot::drive() {
   byte lastRight = wallDistances[rightPin];
   switch (this->updateUs()) {
     case KEEP_GOING: 
-    this->left.write(90-lFast); this->right.write(90+rFast); 
-    break; //keep driving straight until issue found
+      this->left.write(90-lFast); this->right.write(90+rFast); 
+      break; //keep driving straight until issue found
     case TURN_LEFT: 
       left.write(90+lSlow);
       right.write(90-rSlow);
-    do{
-      updateUs();
-    }
-    while(wallDistances[frontPin]<10);//back up to 12 inches from the wall
-    this->turn(leftTurn); --dir; break; // left
-    case TURN_RIGHT: 
-    double oldEnc = updateEnc();
-    left.write(90-lSlow);
-    right.write(90+rSlow);
-    do{
-      updateUs();
-    }
-    while(wallDistances[frontPin]>=8 && updateEnc()-oldEnc<5); //go forwards 5 inches past the wall or until front wall is in the way
-    this->turn(rightTurn); ++dir; 
-    this->left.write(90-lFast);//reestablish wall contact
-    this->right.write(90+rFast);
-    do{
-      updateUs();
+      do{
+        updateUs();
       }
-    while(wallDistances[frontPin]>=8 &&updateEnc()<25);//forwards 20 inches or until front wall in the way
-    badRightCount = 0;
-    break; // right
+      while(wallDistances[frontPin]<10);//back up to 12 inches from the wall
+      this->turn(leftTurn); --dir; break; // left
+    case TURN_RIGHT: 
+      double oldEnc = updateEnc();
+      left.write(90-lSlow);
+      right.write(90+rSlow);
+      do{
+        updateUs();
+      }
+      while(wallDistances[frontPin]>=8 && updateEnc()-oldEnc<5); //go forwards 5 inches past the wall or until front wall is in the way
+      this->turn(rightTurn); ++dir; 
+      this->left.write(90-lFast);//reestablish wall contact
+      this->right.write(90+rFast);
+      do{
+        updateUs();
+      }
+      while(wallDistances[frontPin]>=8 &&updateEnc()<25);//forwards 20 inches or until front wall in the way
+      badRightCount = 0;
+      break; // right
   }
 }
 
@@ -145,8 +142,10 @@ void Robot::turn(float deg) {
   delay(500); //wait to settle
   updateDist(); //update distance to go
   lcd.clear(); //state where you're going
-  lcd.print("Turning: ");
-  lcd.print(deg < 0 ? "left" : "right");
+  lcd.print("Xave: ");
+  lcd.print(updateEnc());
+//  lcd.print(" XR: ");
+//  lcd.print();
   this->pid.reset();//reset pid
   this->gyro.reset();//reset gyro readings, prevents massive error over time
   float gyroVal;

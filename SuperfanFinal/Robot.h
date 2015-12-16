@@ -113,9 +113,9 @@ class Robot {
 #define leftTurn -81.0
 #define flameCutOff 900
 #define badRightMax 20
-#define lFast 28
+#define lFast 27
 #define rFast 25
-#define lSlow 23
+#define lSlow 22
 #define rSlow 20
 /* converts from degrees to radians*/
 #define degToRad(deg) (deg*PI/180.0)
