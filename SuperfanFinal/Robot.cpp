@@ -93,14 +93,14 @@ void Robot::drive() {
       do{
         updateUs();
       }
-      while(wallDistances[frontPin]>=8 && updateEnc()-oldEnc<5); //go forwards 5 inches past the wall or until front wall is in the way
+      while(wallDistances[frontPin]>=8 && updateEnc() - oldEnc < 3); //go forwards 5 inches past the wall or until front wall is in the way
       this->turn(rightTurn); ++dir; 
       this->left.write(90-lFast);//reestablish wall contact
       this->right.write(90+rFast);
       do{
         updateUs();
       }
-      while(wallDistances[frontPin]>=8 && updateEnc() < 15);//forwards 20 inches or until front wall in the way
+      while(wallDistances[frontPin]>=8 && updateEnc() < 20);//forwards 20 inches or until front wall in the way
       badRightCount = 0;
       break; // right
   }
@@ -126,12 +126,17 @@ void Robot::alignToFlame() {
       minReading = temp;
       minDisp = updateEnc();
     }
-    if (temp > flameCutOff)
-      done = true;//you have gone past the candle
+    this->updateUs();
+    if(wallDistances[frontPin] < 8) done = true;
+    if (updateEnc() > 6){
+      if(temp > flameCutOff){
+        done = true; //you have gone past the candle
+      }
+    }
     index++;
     left.write(90-lSlow);
     right.write(90+rSlow);
-    while (updateEnc() < 0.5 * index -0.5);
+    while (updateEnc() < 0.5 * index);
     left.write(90);
     right.write(90);
   }
@@ -147,9 +152,9 @@ void Robot::turn(float deg) {
   delay(500); //wait to settle
   updateDist(); //update distance to go
   lcd.clear(); //state where you are
-  lcd.print("X: ");
+  lcd.print("X:");
   lcd.print(this->x);
-  lcd.print(" Y: ");
+  lcd.print(" Y:");
   lcd.print(this->y);
   this->pid.reset();//reset pid
   this->gyro.reset();//reset gyro readings, prevents massive error over time
@@ -203,34 +208,27 @@ void Robot::extinguish() {
   right.write(90);
   updateDist();
   sweep();
-  tilt.on();
-  while(analogRead(flameHeightSensorPin) < flameCutOff - 200);
-  tilt.off();
+  do{
+    tilt.on();
+    delay(5000);  
+    tilt.off();
+    delay(1000);
+  }
+  while(analogRead(flameHeightSensorPin) < flameCutOff);
   digitalWrite(ledPin, LOW);
   lcd.print("FIRE'S OUT!");
-  tilt.off();
   delay(2000);
   updateFinal();
   lcd.clear();
-  lcd.print("X: ");
+  lcd.print("X:");
   lcd.print(this->x);
-  lcd.print(" Y: ");
+  lcd.print(" Y:");
   lcd.print(this->y);
   lcd.setCursor(0, 1);
   updateUs();
   float temp = getZ(wallDistances[frontPin]);
-  lcd.print("Z: ");
+  lcd.print("Z:");
   lcd.print(temp);
-//  lcd.setCursor(0,0);
-//  lcd.print("dX = ");
-//  lcd.print(wallDistances[frontPin]);
-//  lcd.print(" T = ");
-//  lcd.print((90-stepsToDeg(tilt.numSteps)));
-//  lcd.setCursor(0,1);
-//  lcd.print("Z = ");
-//  lcd.print(temp);
-//  lcd.print(" Ti");
-//  lcd.print(tilt.numSteps);
  
  /********************************/
  while(true);//stop doing things.
