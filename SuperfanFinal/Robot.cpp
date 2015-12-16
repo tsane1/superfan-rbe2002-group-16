@@ -16,6 +16,10 @@ Robot::Robot() {
 }
 
 void Robot::init() { //this is called to initialize all the variables needed for the robot
+  pinMode(beedoPin, INPUT);
+  digitalWrite(beedoPin, LOW);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
   x = 0; //the X pos relative to start
   y = 0; //the Y pos relative to start
   left.attach(leftServoPin, 1000, 2000); //attaches the motor to the correct pin, with additional info for the 393 motor use
@@ -80,7 +84,7 @@ void Robot::drive() {
       do{
         updateUs();
       }
-      while(wallDistances[frontPin]<10);//back up to 12 inches from the wall
+      while(wallDistances[frontPin] < 10);//back up to 12 inches from the wall
       this->turn(leftTurn); --dir; break; // left
     case TURN_RIGHT: 
       double oldEnc = updateEnc();
@@ -96,7 +100,7 @@ void Robot::drive() {
       do{
         updateUs();
       }
-      while(wallDistances[frontPin]>=8 &&updateEnc()<25);//forwards 20 inches or until front wall in the way
+      while(wallDistances[frontPin]>=8 && updateEnc() < 15);//forwards 20 inches or until front wall in the way
       badRightCount = 0;
       break; // right
   }
@@ -134,6 +138,7 @@ void Robot::alignToFlame() {
   left.write(90+lSlow);
   right.write(90-rSlow);
   while (updateEnc() > minDisp);
+  digitalWrite(ledPin, HIGH);
 }
 
 void Robot::turn(float deg) {
@@ -198,22 +203,19 @@ void Robot::extinguish() {
   right.write(90);
   updateDist();
   sweep();
-  do{
-    tilt.on();
-    delay(10000);
-    tilt.off();
-    delay(1000);
-  }
-  while(analogRead(flameHeightSensorPin) < flameCutOff);
-
+  tilt.on();
+  while(analogRead(flameHeightSensorPin) < flameCutOff - 200);
+  tilt.off();
+  digitalWrite(ledPin, LOW);
   lcd.print("FIRE'S OUT!");
   tilt.off();
   delay(2000);
+  updateFinal();
   lcd.clear();
   lcd.print("X: ");
-  lcd.print(this->x + wallDistances[frontPin] + 2.);
+  lcd.print(this->x);
   lcd.print(" Y: ");
-  lcd.print(this->y + wallDistances[frontPin] + 2.);
+  lcd.print(this->y);
   lcd.setCursor(0, 1);
   updateUs();
   float temp = getZ(wallDistances[frontPin]);
@@ -247,6 +249,15 @@ void Robot::updateDist() {
     case pY: y += updateEnc(); break;
     case mX: x -= updateEnc(); break;
     case mY: y -= updateEnc(); break;
+  }
+}
+
+void Robot::updateFinal() {
+  switch (dir) { //depending on what direction were looking at, add or decrease pos
+    case pX: x += (wallDistances[frontPin] + 2); break;
+    case pY: y += (wallDistances[frontPin] + 2); break;
+    case mX: x -= (wallDistances[frontPin] + 2); break;
+    case mY: y -= (wallDistances[frontPin] + 2); break;
   }
 }
 
