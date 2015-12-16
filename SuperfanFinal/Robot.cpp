@@ -86,14 +86,20 @@ void Robot::drive() {
     while(wallDistances[frontPin]<10);//back up to 12 inches from the wall
     this->turn(leftTurn); --dir; break; // left
     case TURN_RIGHT: 
-    delay(100); 
+    double oldEnc = updateEnc();
+    left.write(90-lSlow);
+    right.write(90+rSlow);
+    do{
+      updateUs();
+    }
+    while(wallDistances[frontPin]>=8 && updateEnc()-oldEnc<5); //go forwards 5 inches past the wall or until front wall is in the way
     this->turn(rightTurn); ++dir; 
     this->left.write(90-lFast);//reestablish wall contact
     this->right.write(90+rFast);
     do{
-      //drives a little to move
-    }
-    while(wallDistances[frontPin]>8 &&updateEnc()<20);//forwards 20 inches or until front wall in the way
+      updateUs();
+      }
+    while(wallDistances[frontPin]>=8 &&updateEnc()<25);//forwards 20 inches or until front wall in the way
     badRightCount = 0;
     break; // right
   }
@@ -158,12 +164,6 @@ void Robot::turn(float deg) {
   }
   while (abs(deg - gyroVal) > 1); //check if you're within one degree of pos
   resetEnc();
-  
-  if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
-    this->left.write(62);
-    this->right.write(115);
-    delay(27  00); //drives a little to move
-  }
   this->left.write(90);
   this->right.write(90);
 }
@@ -189,7 +189,7 @@ void Robot::extinguish() {
   resetEnc();
   lcd.clear();
   updateUs();
-  while(updateEnc() < 18 && wallDistances[frontPin] > 6){
+  while(updateEnc() < 30 && wallDistances[frontPin] > 8){
     left.write(90 - lSlow);
     right.write(90 + rSlow);
     lcd.print(updateEnc());
@@ -201,10 +201,8 @@ void Robot::extinguish() {
   sweep();
   do{
     tilt.on();
-    lcd.print(analogRead(flameHeightSensorPin));
-    delay(5000);
+    delay(10000);
     tilt.off();
-    lcd.clear();
     delay(1000);
   }
   while(analogRead(flameHeightSensorPin) < flameCutOff);
@@ -214,6 +212,7 @@ void Robot::extinguish() {
   delay(1000);
   lcd.clear();
   updateUs();
+  float temp = getZ(wallDistances[frontPin]);
   lcd.setCursor(0,0);
   lcd.print("dX = ");
   lcd.print(wallDistances[frontPin]);
@@ -221,7 +220,9 @@ void Robot::extinguish() {
   lcd.print((90-stepsToDeg(tilt.numSteps)));
   lcd.setCursor(0,1);
   lcd.print("Z = ");
-  lcd.print(getZ(wallDistances[frontPin]));
+  lcd.print(temp);
+  lcd.print(" Ti");
+  lcd.print(tilt.numSteps);
  
  /********************************/
  while(true);//stop doing things.
@@ -252,7 +253,7 @@ double Robot::updateEnc() {
  * in the x direction
  * ultra to pivot is 2.5 candle is 2.0 
  */
-#define offsetX 4.5
+#define offsetX 4
 /* this is the offset from the floor to the pivot point
  *  of the fan mount
  */
@@ -260,7 +261,7 @@ double Robot::updateEnc() {
 #define initAngle 90.0
 
 //distance from piv to sensor in straight line
-#define pivToSns 3 
+#define pivToSns 3.5 
 
 /**Gets the height of the flame based on distance
 * from robot of fan mount to the base of the candle
@@ -269,14 +270,34 @@ double Robot::updateEnc() {
 */
 float Robot::getZ(byte dX) {
   float theta = initAngle - stepsToDeg((float)tilt.numSteps);
+  if(theta<90){//theta less than 90
   float snsX = offsetX + dX + //distance between pivot and flame
                //plus the distance between flame sensor and pivot in x direction
                //gives distance in x between candle and sensor
                ((pivToSns) / sin(degToRad(90 - theta)));
   float yFromPivotToFlame = sin(degToRad(90 - theta)) *
                             ((snsX) / sin(degToRad(theta))); //from law of sines
-  return offsetY + yFromPivotToFlame;
-  //total is offset from ground to pivot + y from pivot to flame
+  return offsetY + yFromPivotToFlame;  //total is offset from ground to pivot + y from pivot to flame
+  }
+  else if(theta == 90){//its a right angle no complex trig needed
+    return offsetY+pivToSns;
+  }
+  else{//if theta greater than 90 degrees
+    lcd.clear();
+    float phi = theta-90;
+    lcd.print("phi ");
+    lcd.print(phi);
+    float x = dX+offsetX -  (pivToSns) * sin(degToRad(phi));
+    lcd.print(" x ");
+    lcd.print(x);
+    float y = (x*sin(degToRad(phi)))/(sin(degToRad(90-phi)));
+    lcd.setCursor(0,1);
+    lcd.print(" y");
+    lcd.print(y);
+    delay(2000);
+    return (offsetY+pivToSns*cos(degToRad(phi))) - y;
+  }
+
 }
 
 
