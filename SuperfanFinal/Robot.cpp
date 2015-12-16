@@ -108,7 +108,7 @@ void Robot::alignToFlame() {
   int minDisp = 0;
   byte index = 0;
   bool done = false;
-  while (!done) { //if it still isn't out
+  while (!done) { //if it still isn't passed
     int temp = analogRead(sideFlameSensorPin); //take three readings and average them
     delay(1);
     temp += analogRead(sideFlameSensorPin);
@@ -158,6 +158,12 @@ void Robot::turn(float deg) {
   }
   while (abs(deg - gyroVal) > 1); //check if you're within one degree of pos
   resetEnc();
+  
+  if (deg > 0) { //right turn only because then needs to reestablish a wall contact.
+    this->left.write(62);
+    this->right.write(115);
+    delay(27  00); //drives a little to move
+  }
   this->left.write(90);
   this->right.write(90);
 }
@@ -205,7 +211,7 @@ void Robot::extinguish() {
 
   lcd.print("FIRE'S OUT!");
   tilt.off();
-  delay(100);
+  delay(1000);
   lcd.clear();
   updateUs();
   lcd.setCursor(0,0);
