@@ -107,6 +107,7 @@ class Robot {
 #define backPin 3
 #define sideFlameSensorPin 5
 #define flameHeightSensorPin 4
+#define beedoPin 22
 //encoder is (1 rotation / 39.2 ticks) * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.1578980626 //0.194740943877551 * 30/37 where that first part is the calculated and 30/37 is a correction factor
 #define rightTurn 81.5//because for some reason gyro reading of 85 degrees is 90 degrees of real life
