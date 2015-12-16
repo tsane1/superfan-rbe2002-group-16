@@ -112,7 +112,7 @@ class Robot {
 //encoder is (1 rotation / 39.2 ticks) * (36 teeth on motor / 60 teeth on wheel * 4.05 inch diameter * pi) <- inches per rotation
 #define inchesPerTick  0.1578980626 //0.194740943877551 * 30/37 where that first part is the calculated and 30/37 is a correction factor
 #define rightTurn 80.0 //because for some reason gyro reading of 80 degrees is 90 degrees of real life
-#define leftTurn -83.0 // possibly too much
+#define leftTurn -81.1 // possibly too much
 #define flameCutOff 850
 #define badRightMax 20
 #define lFast 30
