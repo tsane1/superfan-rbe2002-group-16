@@ -141,11 +141,11 @@ void Robot::turn(float deg) {
   this->right.write(90);
   delay(500); //wait to settle
   updateDist(); //update distance to go
-  lcd.clear(); //state where you're going
-  lcd.print("Xave: ");
-  lcd.print(updateEnc());
-//  lcd.print(" XR: ");
-//  lcd.print();
+  lcd.clear(); //state where you are
+  lcd.print("X: ");
+  lcd.print(this->x);
+  lcd.print(" Y: ");
+  lcd.print(this->y);
   this->pid.reset();//reset pid
   this->gyro.reset();//reset gyro readings, prevents massive error over time
   float gyroVal;
@@ -244,7 +244,7 @@ void Robot::updateDist() {
 }
 
 double Robot::updateEnc() {
-  return (lEnc.getPosition() + rEnc.getPosition()) / 2; //average distance turned
+  return (lEnc.getPosition() + rEnc.getPosition()) / 2; //average distance travelled
 }
 
 /* this is the sum of distance from base of candle to flame
