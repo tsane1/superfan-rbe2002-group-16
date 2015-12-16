@@ -208,20 +208,27 @@ void Robot::extinguish() {
 
   lcd.print("FIRE'S OUT!");
   tilt.off();
-  delay(1000);
+  delay(2000);
   lcd.clear();
+  lcd.print("X: ");
+  lcd.print(this->x + wallDistances[frontPin] + 2.);
+  lcd.print(" Y: ");
+  lcd.print(this->y + wallDistances[frontPin] + 2.);
+  lcd.setCursor(0, 1);
   updateUs();
   float temp = getZ(wallDistances[frontPin]);
-  lcd.setCursor(0,0);
-  lcd.print("dX = ");
-  lcd.print(wallDistances[frontPin]);
-  lcd.print(" T = ");
-  lcd.print((90-stepsToDeg(tilt.numSteps)));
-  lcd.setCursor(0,1);
-  lcd.print("Z = ");
+  lcd.print("Z: ");
   lcd.print(temp);
-  lcd.print(" Ti");
-  lcd.print(tilt.numSteps);
+//  lcd.setCursor(0,0);
+//  lcd.print("dX = ");
+//  lcd.print(wallDistances[frontPin]);
+//  lcd.print(" T = ");
+//  lcd.print((90-stepsToDeg(tilt.numSteps)));
+//  lcd.setCursor(0,1);
+//  lcd.print("Z = ");
+//  lcd.print(temp);
+//  lcd.print(" Ti");
+//  lcd.print(tilt.numSteps);
  
  /********************************/
  while(true);//stop doing things.
@@ -282,17 +289,17 @@ float Robot::getZ(byte dX) {
     return offsetY+pivToSns;
   }
   else{//if theta greater than 90 degrees
-    lcd.clear();
+   // lcd.clear();
     float phi = theta-90;
-    lcd.print("phi ");
-    lcd.print(phi);
+   // lcd.print("phi ");
+   // lcd.print(phi);
     float x = dX+offsetX -  (pivToSns) * sin(degToRad(phi));
-    lcd.print(" x ");
-    lcd.print(x);
+   // lcd.print(" x ");
+   // lcd.print(x);
     float y = (x*sin(degToRad(phi)))/(sin(degToRad(90-phi)));
-    lcd.setCursor(0,1);
-    lcd.print(" y");
-    lcd.print(y);
+   // lcd.setCursor(0,1);
+   // lcd.print(" y");
+   // lcd.print(y);
     delay(2000);
     return (offsetY+pivToSns*cos(degToRad(phi))) - y;
   }
