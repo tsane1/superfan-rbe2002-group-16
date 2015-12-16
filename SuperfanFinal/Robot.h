@@ -120,6 +120,6 @@ class Robot {
 #define lSlow 25
 #define rSlow 20
 /* converts from degrees to radians*/
-#define degToRad(deg) (deg*PI/180.0)
+#define degToRad(deg) ((deg)*PI/180.0)
 #define degreesPerStep 1.8
-#define stepsToDeg(steps) (degreesPerStep*steps)
+#define stepsToDeg(steps) (degreesPerStep*(steps))
