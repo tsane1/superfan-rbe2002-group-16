@@ -61,6 +61,7 @@ void Gyro::init() {
 }
 
 void Gyro::reset() {
+  this->gerrz = 0;
   for (int i = 0; i < 1000; i++) { // takes 1000 samples of the gyro
     gyro.read();
     this->gerrz += gyro.g.z;
